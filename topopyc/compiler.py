@@ -53,7 +53,14 @@ class TopoCompiler:
         return StalkType.FLOAT64
 
     def analyze_function(self, fn: Callable) -> Tuple[SimplicialComplex, TypeSheaf, CohomologyAnalysis, ast.FunctionDef, StalkType, Dict[str, StalkType]]:
-        source = inspect.getsource(fn)
+        try:
+            source = inspect.getsource(fn)
+        except (OSError, TypeError) as err:
+            raise RuntimeError(
+                f"TopoPyc could not retrieve source code for '{getattr(fn, '__name__', str(fn))}': {err}.\n"
+                "Ensure the function is defined in a readable file or module (e.g. not an eval string or compiled C extension)."
+            ) from err
+
         # Strip leading indentation if any
         lines = source.splitlines()
         first_line = lines[0]
@@ -174,10 +181,11 @@ class TopoCompiler:
         codegen = NativeCCodeGenerator(sheaf, analysis)
         codegen.set_type_env(refined_env)
 
-        module_name = f"topo_{fn.__name__}"
+        # Compute deterministic cache key from source and compiler flags first
+        func_source_hash = hashlib.sha256(f"{fn_node.name}_{ast.dump(fn_node)}_{self.opt_level}".encode("utf-8")).hexdigest()[:8]
+        module_name = f"topo_{fn.__name__}_{func_source_hash}"
         c_code = codegen.generate_cpython_extension(module_name, fn_node, ret_type, param_types)
 
-        # Compute deterministic cache key from source and compiler flags
         cache_key = hashlib.sha256(f"{c_code}_{self.opt_level}_{self.cc}".encode("utf-8")).hexdigest()[:16]
         
         if output_dir is None:
@@ -385,7 +393,8 @@ def topojit(fn: Optional[Callable] = None, *, opt_level: str = "-O3") -> Callabl
     def decorator(target_fn: Callable) -> Callable:
         compiler = TopoCompiler(opt_level=opt_level)
         so_path = compiler.compile_extension(target_fn)
-        module_name = f"topo_{target_fn.__name__}"
+        # Extract exact module name from .so filename
+        module_name = os.path.splitext(os.path.basename(so_path))[0]
 
         spec = importlib.util.spec_from_file_location(module_name, so_path)
         if spec is None or spec.loader is None:

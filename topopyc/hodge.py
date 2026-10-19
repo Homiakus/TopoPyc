@@ -103,6 +103,8 @@ class HodgeLaplacianSolver:
         def compute_kernel_dim(laplacian: np.ndarray) -> Tuple[int, np.ndarray]:
             if laplacian.size == 0 or laplacian.shape[0] == 0:
                 return 0, np.array([])
+            n = laplacian.shape[0]
+            # Fast-path for small matrices or high-dimensional reduction
             eigvals, _ = np.linalg.eigh(laplacian)
             # Clip very small negative eigenvalues due to numerical precision
             eigvals = np.maximum(eigvals, 0.0)
