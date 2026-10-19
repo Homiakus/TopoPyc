@@ -9,6 +9,7 @@ from .simplicial import SimplicialComplex, Simplex
 from .sheaf import TypeSheaf, StalkType, RestrictionMap
 from .hodge import HodgeLaplacianSolver, CohomologyAnalysis
 from .codegen import NativeCCodeGenerator
+from .optimizer import TopologicalOptimizer, OptimizationStats
 from .compiler import TopoCompiler, topojit
 
 __all__ = [
@@ -19,6 +20,8 @@ __all__ = [
     "RestrictionMap",
     "HodgeLaplacianSolver",
     "CohomologyAnalysis",
+    "TopologicalOptimizer",
+    "OptimizationStats",
     "NativeCCodeGenerator",
     "TopoCompiler",
     "topojit",

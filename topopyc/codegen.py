@@ -18,6 +18,27 @@ class NativeCCodeGenerator:
     def set_type_env(self, env: Dict[str, StalkType]):
         self.type_env = env
 
+    def _infer_expr_type(self, node: ast.AST) -> StalkType:
+        if isinstance(node, ast.Constant):
+            if isinstance(node.value, int):
+                return StalkType.INT64
+            elif isinstance(node.value, float):
+                return StalkType.FLOAT64
+            elif isinstance(node.value, bool):
+                return StalkType.BOOL
+        elif isinstance(node, ast.Name):
+            return self.type_env.get(node.id, StalkType.UNKNOWN)
+        elif isinstance(node, ast.BinOp):
+            lt = self._infer_expr_type(node.left)
+            rt = self._infer_expr_type(node.right)
+            if lt == StalkType.FLOAT64 or rt == StalkType.FLOAT64:
+                return StalkType.FLOAT64
+            if isinstance(node.op, ast.Div):
+                return StalkType.FLOAT64
+            if lt == StalkType.INT64 and rt == StalkType.INT64:
+                return StalkType.INT64
+        return StalkType.UNKNOWN
+
     def map_binop(self, op: ast.operator) -> str:
         if isinstance(op, ast.Add): return "+"
         if isinstance(op, ast.Sub): return "-"
@@ -53,7 +74,11 @@ class NativeCCodeGenerator:
             left_str = self.compile_expr(node.left)
             right_str = self.compile_expr(node.right)
             if isinstance(node.op, ast.Mod):
-                # Use fmod if float or cast to int64_t
+                # If both are known integer types, use native C % for max performance
+                left_type = self._infer_expr_type(node.left)
+                right_type = self._infer_expr_type(node.right)
+                if left_type == StalkType.INT64 and right_type == StalkType.INT64:
+                    return f"({left_str} % {right_str})"
                 return f"fmod((double)({left_str}), (double)({right_str}))"
             op_str = self.map_binop(node.op)
             return f"({left_str} {op_str} {right_str})"

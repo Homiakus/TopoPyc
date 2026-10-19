@@ -94,5 +94,19 @@ class TestTopoPyc(unittest.TestCase):
         self.assertTrue(os.path.exists(compiled_bin))
         self.assertTrue(os.access(compiled_bin, os.X_OK))
 
+    def test_05_topological_optimization_passes(self):
+        from topopyc import TopologicalOptimizer
+        compiler = TopoCompiler()
+        complex, sheaf, analysis, fn_node, ret_type, param_types = compiler.analyze_function(kernel_mandelbrot)
+        optimizer = TopologicalOptimizer(complex, sheaf, analysis)
+        raw_env = dict(param_types)
+        refined_env, stats = optimizer.optimize(raw_env)
+        
+        self.assertTrue(stats.is_monomorphic)
+        self.assertTrue(stats.is_race_free)
+        self.assertIn("SheafTypeFlowRefinement", stats.optimizations_applied)
+        self.assertIn("HarmonicZeroAllocationUnboxing", stats.optimizations_applied)
+        self.assertIn("HodgeLockFreeProof", stats.optimizations_applied)
+
 if __name__ == "__main__":
     unittest.main()

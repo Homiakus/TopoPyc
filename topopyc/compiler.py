@@ -20,12 +20,28 @@ from typing import Callable, Any, Dict, Optional, Tuple
 from .simplicial import SimplicialComplex
 from .sheaf import TypeSheaf, StalkType
 from .hodge import HodgeLaplacianSolver, CohomologyAnalysis
+from .optimizer import TopologicalOptimizer, OptimizationStats
 from .codegen import NativeCCodeGenerator
 
+import hashlib
+import shutil
+from pathlib import Path
+
 class TopoCompiler:
-    def __init__(self, opt_level: str = "-O3"):
+    def __init__(self, opt_level: str = "-O3", cache_dir: Optional[str] = None):
         self.opt_level = opt_level
         self.include_dir = sysconfig.get_paths()["include"]
+        # Resilient C compiler discovery: check gcc, then clang, then cc
+        self.cc = os.environ.get("CC") or shutil.which("gcc") or shutil.which("clang") or shutil.which("cc")
+        if not self.cc:
+            raise RuntimeError(
+                "TopoPyc error: No native C compiler (gcc, clang, cc) detected on system PATH.\n"
+                "Please install build tools: 'sudo apt install build-essential python3-dev' (Ubuntu/Debian) "
+                "or 'xcode-select --install' (macOS)."
+            )
+        # Persistent cache directory: ~/.cache/topopyc
+        self.cache_dir = Path(cache_dir or os.path.expanduser("~/.cache/topopyc"))
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     def _type_from_annotation(self, ann: Any) -> StalkType:
         if ann in (float, "float"):
@@ -69,27 +85,70 @@ class TopoCompiler:
         # Return type
         ret_type = self._type_from_annotation(sig.return_annotation)
 
-        # Walk AST to construct dataflow edges and operation triangles
+        # Helper to deduce expression type based on constants and parameters
+        def infer_node_type(expr: ast.AST, env: Dict[str, StalkType]) -> StalkType:
+            if isinstance(expr, ast.Constant):
+                if isinstance(expr.value, bool):
+                    return StalkType.BOOL
+                elif isinstance(expr.value, int):
+                    return StalkType.INT64
+                elif isinstance(expr.value, float):
+                    return StalkType.FLOAT64
+            elif isinstance(expr, ast.Name):
+                return env.get(expr.id, StalkType.FLOAT64)
+            elif isinstance(expr, ast.BinOp):
+                lt = infer_node_type(expr.left, env)
+                rt = infer_node_type(expr.right, env)
+                if isinstance(expr.op, ast.Div):
+                    return StalkType.FLOAT64
+                if lt == StalkType.FLOAT64 or rt == StalkType.FLOAT64:
+                    return StalkType.FLOAT64
+                if lt == StalkType.INT64 and rt == StalkType.INT64:
+                    return StalkType.INT64
+                return StalkType.FLOAT64
+            elif isinstance(expr, ast.Call):
+                func_name = expr.func.id if isinstance(expr.func, ast.Name) else (expr.func.attr if isinstance(expr.func, ast.Attribute) else "")
+                if func_name in ("sin", "cos", "tan", "sqrt", "exp", "log", "fabs", "float"):
+                    return StalkType.FLOAT64
+                elif func_name == "int":
+                    return StalkType.INT64
+            return StalkType.FLOAT64
+
+        current_env = dict(param_types)
+
+        # Walk AST to construct dataflow edges, sheaf restrictions and operation triangles
         for node in ast.walk(fn_node):
             if isinstance(node, ast.Assign):
+                assigned_type = infer_node_type(node.value, current_env)
                 for target in node.targets:
                     if isinstance(target, ast.Name):
+                        current_env[target.id] = assigned_type
                         v_idx = complex.add_simplex(0, f"var_{target.id}", "Variable")
-                        # Infer local type
-                        assigned_type = StalkType.FLOAT64
-                        if isinstance(node.value, ast.Constant):
-                            if isinstance(node.value.value, int):
-                                assigned_type = StalkType.INT64
-                            elif isinstance(node.value.value, float):
-                                assigned_type = StalkType.FLOAT64
-                        sheaf.assign_stalk(complex.get_vertex(v_idx), assigned_type)
+                        target_vertex = complex.get_vertex(v_idx)
+                        sheaf.assign_stalk(target_vertex, assigned_type)
+            elif isinstance(node, ast.AugAssign):
+                if isinstance(node.target, ast.Name):
+                    # Coerce with rhs
+                    rhs_type = infer_node_type(node.value, current_env)
+                    lhs_type = current_env.get(node.target.id, StalkType.FLOAT64)
+                    new_type = sheaf.infer_coercion(lhs_type, rhs_type)
+                    current_env[node.target.id] = new_type
+                    v_idx = complex.add_simplex(0, f"var_{node.target.id}", "Variable")
+                    sheaf.assign_stalk(complex.get_vertex(v_idx), new_type)
             elif isinstance(node, ast.BinOp):
                 left_id = node.left.id if isinstance(node.left, ast.Name) else f"left_{node.lineno}"
                 right_id = node.right.id if isinstance(node.right, ast.Name) else f"right_{node.lineno}"
                 v_left = complex.add_simplex(0, f"var_{left_id}", "Operand")
                 v_right = complex.add_simplex(0, f"var_{right_id}", "Operand")
                 v_op = complex.add_simplex(0, f"op_{type(node.op).__name__}_{node.lineno}", "Operator")
-                complex.add_triangle(v_left, v_right, v_op, f"tri_{node.lineno}")
+                
+                # Flow from operands to operator: (v_left -> v_op) and (v_right -> v_op)
+                e1 = complex.add_edge(v_left, v_op, f"df_{left_id}_{node.lineno}")
+                e2 = complex.add_edge(v_right, v_op, f"df_{right_id}_{node.lineno}")
+                
+                # Record restriction maps in cellular sheaf
+                sheaf.set_restriction(dim=1, src_idx=v_left, dst_idx=e1)
+                sheaf.set_restriction(dim=1, src_idx=v_right, dst_idx=e2)
 
         solver = HodgeLaplacianSolver(sheaf)
         analysis = solver.analyze()
@@ -97,33 +156,47 @@ class TopoCompiler:
 
     def compile_extension(self, fn: Callable, output_dir: Optional[str] = None) -> str:
         """
-        Compiles function into a native CPython C extension (.so) and returns shared library path.
+        Compiles function into a native CPython C extension (.so) with topological optimization.
+        Uses persistent AST caching to avoid redundant GCC compilations.
         """
         complex, sheaf, analysis, fn_node, ret_type, param_types = self.analyze_function(fn)
-        codegen = NativeCCodeGenerator(sheaf, analysis)
-        # Populate full type environment from sheaf stalks
-        full_env = dict(param_types)
+        
+        # 1. Pipeline: Topological Optimization Passes
+        optimizer = TopologicalOptimizer(complex, sheaf, analysis)
+        raw_env = dict(param_types)
         for s, st in sheaf.stalks.items():
             if s.dim == 0 and s.id.startswith("var_"):
                 var_name = s.id[4:]
-                full_env[var_name] = st
-        codegen.set_type_env(full_env)
+                raw_env[var_name] = st
+        refined_env, opt_stats = optimizer.optimize(raw_env)
+
+        # 2. Codegen with optimized environment
+        codegen = NativeCCodeGenerator(sheaf, analysis)
+        codegen.set_type_env(refined_env)
 
         module_name = f"topo_{fn.__name__}"
         c_code = codegen.generate_cpython_extension(module_name, fn_node, ret_type, param_types)
 
+        # Compute deterministic cache key from source and compiler flags
+        cache_key = hashlib.sha256(f"{c_code}_{self.opt_level}_{self.cc}".encode("utf-8")).hexdigest()[:16]
+        
         if output_dir is None:
-            output_dir = tempfile.mkdtemp(prefix="topopyc_")
+            output_dir = str(self.cache_dir / cache_key)
+            os.makedirs(output_dir, exist_ok=True)
 
         c_file_path = os.path.join(output_dir, f"{module_name}.c")
         so_file_path = os.path.join(output_dir, f"{module_name}.so")
 
+        # Reuse pre-compiled .so if valid
+        if os.path.exists(so_file_path) and os.path.getsize(so_file_path) > 0:
+            return so_file_path
+
         with open(c_file_path, "w") as f:
             f.write(c_code)
 
-        # Invoke GCC
+        # Invoke resolved C compiler (gcc / clang / cc)
         cmd = [
-            "gcc",
+            self.cc,
             self.opt_level,
             "-march=native",
             "-ffast-math",
@@ -137,7 +210,7 @@ class TopoCompiler:
         ]
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if res.returncode != 0:
-            raise RuntimeError(f"TopoPyc GCC compilation failed:\n{res.stderr}")
+            raise RuntimeError(f"TopoPyc {os.path.basename(self.cc)} compilation failed:\n{res.stderr}")
 
         return so_file_path
 
@@ -146,13 +219,18 @@ class TopoCompiler:
         Compiles standalone native executable with embedded main benchmark harness.
         """
         complex, sheaf, analysis, fn_node, ret_type, param_types = self.analyze_function(fn)
-        codegen = NativeCCodeGenerator(sheaf, analysis)
-        full_env = dict(param_types)
+        
+        # Pipeline: Topological Optimization Passes
+        optimizer = TopologicalOptimizer(complex, sheaf, analysis)
+        raw_env = dict(param_types)
         for s, st in sheaf.stalks.items():
             if s.dim == 0 and s.id.startswith("var_"):
                 var_name = s.id[4:]
-                full_env[var_name] = st
-        codegen.set_type_env(full_env)
+                raw_env[var_name] = st
+        refined_env, opt_stats = optimizer.optimize(raw_env)
+
+        codegen = NativeCCodeGenerator(sheaf, analysis)
+        codegen.set_type_env(refined_env)
 
         fn_c_code = codegen.generate_function(fn_node, ret_type, param_types)
         fn_name = fn_node.name
@@ -183,7 +261,7 @@ int main() {{
             f.write(main_c)
 
         cmd = [
-            "gcc",
+            self.cc,
             self.opt_level,
             "-march=native",
             "-ffast-math",
@@ -281,7 +359,7 @@ int main(int argc, char** argv) {{
             return c_src_path
 
         cmd = [
-            "gcc",
+            self.cc,
             self.opt_level,
             "-march=native",
             "-ffast-math",
