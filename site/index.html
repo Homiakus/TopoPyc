@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TopoPyc — Топологический пучковый компилятор Python</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+  <!-- Interactive Particle Background Canvas -->
+  <canvas id="topologyCanvas"></canvas>
+
+  <!-- Navigation Bar -->
+  <header class="navbar glass">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-symbol">⟁</span>
+        <span class="logo-text">TopoPyc</span>
+        <span class="badge">v0.1.0-AOT</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#about" class="nav-link">Теория</a>
+        <a href="#pipeline" class="nav-link">Конвейер</a>
+        <a href="#benchmark" class="nav-link">Бенчмарки</a>
+        <a href="#interactive" class="nav-link">Интерактив</a>
+        <a href="#code" class="nav-link">Код</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://github.com/Homiakus/TopoPyc" target="_blank" class="btn btn-glow">GitHub Repo ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section with Math Hologram Aesthetics -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="pulse-dot"></span>
+        Многомерная Пучковая Голография • Pure Python $\to$ Native AVX
+      </div>
+      <h1 class="hero-title">
+        Компилятор Python <br>
+        <span class="gradient-text">на высших лапласианах Ходжа</span>
+      </h1>
+      <p class="hero-subtitle">
+        TopoPyc решает фундаментальную проблему компиляции динамического Python за счет перевода AST в симплициальный пучковый комплекс $X$. Мономорфизация через зануление когомологий $H^1 \to 0$ и 100% unboxing значений без единого заголовка PyObject.
+      </p>
+
+      <div class="hero-metrics">
+        <div class="metric-card glass">
+          <div class="metric-val">41.9x</div>
+          <div class="metric-label">Ускорение vs CPython 3.13</div>
+        </div>
+        <div class="metric-card glass">
+          <div class="metric-val">56.3x</div>
+          <div class="metric-label">Быстрее torch.compile</div>
+        </div>
+        <div class="metric-card glass">
+          <div class="metric-val">0 ns</div>
+          <div class="metric-label">Накладные расходы GIL / Locks</div>
+        </div>
+      </div>
+
+      <div class="hero-buttons">
+        <a href="#code" class="btn btn-primary">Попробовать @topojit</a>
+        <a href="#pipeline" class="btn btn-secondary">Изучить топологию $H^k$</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Topology Visualizer Playground -->
+  <section id="interactive" class="section interactive-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Интерактивный тренажер</span>
+        <h2>Визуализация симплициального комплекса</h2>
+        <p>Наблюдайте, как Python код преобразуется в вершины $X^{(0)}$, ребра $X^{(1)}$ и треугольники $X^{(2)}$ с вычислением лапласиана $\Delta_k$.</p>
+      </div>
+
+      <div class="simulator-wrapper glass">
+        <div class="simulator-controls">
+          <button class="sim-btn active" data-kernel="mandelbrot">Фрактал Мандельброта</button>
+          <button class="sim-btn" data-kernel="attention">Attention Reduction</button>
+          <button class="sim-btn" data-kernel="gelu">Fused GELU Poly</button>
+        </div>
+
+        <div class="simulator-display">
+          <div class="sim-code-panel">
+            <div class="panel-header">Python Kernel Definition</div>
+            <pre><code id="kernelCodeView">@topojit
+def kernel(x: float, n: int) -> float:
+    acc = 0.0
+    for i in range(n):
+        acc += sin(x * float(i))
+    return acc</code></pre>
+          </div>
+
+          <div class="sim-stats-panel">
+            <div class="panel-header">Спектральный анализ Ходжа</div>
+            <div class="hodge-stat-grid">
+              <div class="stat-item">
+                <span class="stat-name">0-Симплексы (Вершины $X^{(0)}$):</span>
+                <span class="stat-value" id="statV">6</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-name">1-Симплексы (Ребра Def-Use $X^{(1)}$):</span>
+                <span class="stat-value" id="statE">8</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-name">2-Симплексы (Грани $X^{(2)}$):</span>
+                <span class="stat-value" id="statT">3</span>
+              </div>
+              <div class="stat-item highlight">
+                <span class="stat-name">$\dim H^0(\Delta_0)$ (Компоненты связности):</span>
+                <span class="stat-value" id="statH0">1</span>
+              </div>
+              <div class="stat-item highlight-success">
+                <span class="stat-name">$\dim H^1(\Delta_1)$ (Дефект типизации):</span>
+                <span class="stat-value" id="statH1">0 (Мономорфно!)</span>
+              </div>
+              <div class="stat-item highlight-cyan">
+                <span class="stat-name">$\dim H^2(\Delta_2)$ (Инвариант гонок):</span>
+                <span class="stat-value" id="statH2">0 (Lock-Free)</span>
+              </div>
+            </div>
+            <div class="hodge-formula">
+              $$\Delta_k = d_{k-1} d_{k-1}^* + d_k^* d_k \quad \Longrightarrow \quad \ker(\Delta_1) = 0$$
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architectural Pipeline Section -->
+  <section id="pipeline" class="section pipeline-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Архитектурный конвейер</span>
+        <h2>Как устроен TopoPyc изнутри</h2>
+        <p>4 фундаментальных слоя непрерывной трансформации синтаксиса в машинный код.</p>
+      </div>
+
+      <div class="pipeline-grid">
+        <div class="pipeline-step glass">
+          <div class="step-num">01</div>
+          <h3>Симплициальный комплекс</h3>
+          <p>Разбор стандартного AST Python на вершины переменных, ориентированные ребра Def-Use потоков данных и 2-симплексы операторов с матрицами инцидентности.</p>
+          <div class="step-badge">topopyc/simplicial.py</div>
+        </div>
+
+        <div class="pipeline-step glass">
+          <div class="step-num">02</div>
+          <h3>Клеточный пучок типов</h3>
+          <p>Стебли векторных пространств $\mathcal{F}(\sigma)$ привязываются к каждой клетке. Операторы рестрикции $\rho$ гарантируют согласованность типов при переходе операндов.</p>
+          <div class="step-badge">topopyc/sheaf.py</div>
+        </div>
+
+        <div class="pipeline-step glass">
+          <div class="step-num">03</div>
+          <h3>Оператор Ходжа-Лапласа</h3>
+          <p>Дискретное внешнее исчисление. Вычисление операторов $\Delta_0, \Delta_1, \Delta_2$ доказывает мономорфизм типов и отсутствие дедлоков без мьютексов.</p>
+          <div class="step-badge">topopyc/hodge.py</div>
+        </div>
+
+        <div class="pipeline-step glass">
+          <div class="step-num">04</div>
+          <h3>Unboxed C99 & AVX Codegen</h3>
+          <p>Генерация компактного машинного Си-кода без заголовков PyObject и вызовов сборщика мусора. Прямой доступ к регистрам FPU/SIMD.</p>
+          <div class="step-badge">topopyc/codegen.py</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Benchmarks Section -->
+  <section id="benchmark" class="section benchmark-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Эмпирические измерения</span>
+        <h2>Бенчмарки: Deep Learning & High-Compute Ядра</h2>
+        <p>Замеры времени выполнения 10 000 000 итераций на одном ядре CPU (меньше — лучше).</p>
+      </div>
+
+      <div class="chart-container glass">
+        <!-- Kernel 1 Chart -->
+        <div class="chart-block">
+          <div class="chart-header">
+            <h4>Fused GELU Polynomial Kernel (10M итераций)</h4>
+            <span class="badge badge-fast">TopoPyc: 25.04 ms</span>
+          </div>
+          <div class="bars">
+            <div class="bar-group">
+              <span class="bar-label">PyTorch Eager</span>
+              <div class="bar-rail">
+                <div class="bar-fill eager" style="width: 100%;">19 894 ms</div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <span class="bar-label">torch.compile</span>
+              <div class="bar-rail">
+                <div class="bar-fill torch" style="width: 25%;">1 409 ms</div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <span class="bar-label">Pure CPython 3.13</span>
+              <div class="bar-rail">
+                <div class="bar-fill cpython" style="width: 20%;">1 048 ms</div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <span class="bar-label">⚡ TopoPyc JIT</span>
+              <div class="bar-rail">
+                <div class="bar-fill topopyc" style="width: 4%;">25 ms (56x быстрее)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kernel 2 Chart -->
+        <div class="chart-block">
+          <div class="chart-header">
+            <h4>Attention Reduction (20M Tokens)</h4>
+            <span class="badge badge-fast">TopoPyc: 100.86 ms</span>
+          </div>
+          <div class="bars">
+            <div class="bar-group">
+              <span class="bar-label">Pure CPython 3.13</span>
+              <div class="bar-rail">
+                <div class="bar-fill cpython" style="width: 85%;">2 116 ms</div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <span class="bar-label">⚡ TopoPyc JIT</span>
+              <div class="bar-rail">
+                <div class="bar-fill topopyc" style="width: 10%;">100 ms (21x быстрее)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage & Quickstart Code Section -->
+  <section id="code" class="section code-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Быстрый старт</span>
+        <h2>Интеграция в одну строчку</h2>
+        <p>Никаких изменений синтаксиса Python. Просто добавьте декоратор.</p>
+      </div>
+
+      <div class="code-cards-grid">
+        <div class="code-card glass">
+          <div class="card-title">1. JIT компиляция функции в Python</div>
+          <pre><code>from topopyc import topojit
+import math
+
+@topojit(opt_level="-O3")
+def fast_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
+    z_re = 0.0
+    z_im = 0.0
+    for i in range(max_iter):
+        z_re2 = z_re * z_re
+        z_im2 = z_im * z_im
+        if z_re2 + z_im2 > 4.0:
+            return i
+        z_im = 2.0 * z_re * z_im + c_im
+        z_re = z_re2 - z_im2 + c_re
+    return max_iter</code></pre>
+        </div>
+
+        <div class="code-card glass">
+          <div class="card-title">2. AOT компиляция через CLI в нативный бинарник</div>
+          <pre><code># Установка пакета
+pip install -e .
+
+# Спектральный анализ Ходжа
+topopyc kernel.py --analyze
+
+# Компиляция в автономный исполняемый файл C99/AVX
+topopyc kernel.py -o ./kernel_bin -O -Ofast
+
+# Компиляция в разделяемую библиотеку CPython .so
+topopyc kernel.py --so -o ./kernel.so</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer glass">
+    <div class="container footer-content">
+      <div class="footer-left">
+        <span class="logo-symbol">⟁</span>
+        <strong>TopoPyc Engine</strong> — Multidimensional Topological Holography Compiler.
+      </div>
+      <div class="footer-right">
+        <span>Лицензия MIT • 2026 Tao Science & TopoCompil</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
