@@ -1,242 +1,196 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TopoPyc — Топологический пучковый компилятор Python</title>
+  <title>TopoPyc — Python syntax. C speed. Zero GIL.</title>
+  <meta name="description" content="Topological Sheaf JIT compiler for Python based on multidimensional Hodge Laplacians. 42x faster than CPython with 100% unboxed register execution.">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="theme-dark">
-  <!-- Interactive Particle Background Canvas -->
-  <canvas id="topologyCanvas"></canvas>
+<body>
 
-  <!-- Navigation Bar -->
-  <header class="navbar glass">
-    <div class="nav-container">
-      <div class="logo">
-        <span class="logo-symbol">⟁</span>
-        <span class="logo-text">TopoPyc</span>
-        <span class="badge">v0.1.0-AOT</span>
-      </div>
-      <nav class="nav-links">
-        <a href="#about" class="nav-link">Теория</a>
-        <a href="#pipeline" class="nav-link">Конвейер</a>
-        <a href="#benchmark" class="nav-link">Бенчмарки</a>
-        <a href="#interactive" class="nav-link">Интерактив</a>
-        <a href="#code" class="nav-link">Код</a>
+  <!-- Floating Island Navigation (Linear / Vercel Style) -->
+  <header class="header-nav">
+    <div class="nav-shell">
+      <a href="#" class="brand-link">
+        <div class="brand-logo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 22 22 22 12 2"></polygon>
+            <circle cx="12" cy="14" r="2"></circle>
+          </svg>
+        </div>
+        <span class="brand-name">topopyc</span>
+        <span class="brand-status">v0.1.0</span>
+      </a>
+
+      <nav class="nav-menu">
+        <a href="#benchmarks" class="nav-item">Benchmarks</a>
+        <a href="#architecture" class="nav-item">Architecture</a>
+        <a href="#interactive" class="nav-item">Interactive</a>
+        <a href="#quickstart" class="nav-item">Docs</a>
       </nav>
-      <div class="nav-actions">
-        <a href="https://github.com/Homiakus/TopoPyc" target="_blank" class="btn btn-glow">GitHub Repo ↗</a>
+
+      <div class="nav-cta">
+        <a href="https://github.com/Homiakus/TopoPyc" target="_blank" rel="noopener" class="btn-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>Star on GitHub</span>
+        </a>
       </div>
     </div>
   </header>
 
-  <!-- Hero Section with Math Hologram Aesthetics -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <div class="hero-eyebrow">
-        <span class="pulse-dot"></span>
-        Многомерная Пучковая Голография • Pure Python $\to$ Native AVX
+  <!-- Hero Section (Clean, Typographic, Bun/Raycast Style) -->
+  <section class="hero">
+    <div class="radial-glow"></div>
+    <div class="container hero-inner">
+      <div class="pill-announcement">
+        <span class="pill-dot"></span>
+        <span class="pill-text">Discrete Exterior Calculus on Cellular Sheaves</span>
+        <span class="pill-arrow">→</span>
       </div>
+
       <h1 class="hero-title">
-        Компилятор Python <br>
-        <span class="gradient-text">на высших лапласианах Ходжа</span>
+        Python syntax.<br>
+        <span class="gradient-headline">C bare-metal speed.</span>
       </h1>
-      <p class="hero-subtitle">
-        TopoPyc решает фундаментальную проблему компиляции динамического Python за счет перевода AST в симплициальный пучковый комплекс $X$. Мономорфизация через зануление когомологий $H^1 \to 0$ и 100% unboxing значений без единого заголовка PyObject.
+
+      <p class="hero-desc">
+        TopoPyc transforms Python code into an $n$-dimensional simplicial complex with typed sheaves. 
+        Monomorphism is mathematically proven by vanishing 1st cohomology $\ker(\Delta_1) = 0$, compiling functions into unboxed register C99 with native AVX-512 vectorization.
       </p>
 
-      <div class="hero-metrics">
-        <div class="metric-card glass">
-          <div class="metric-val">41.9x</div>
-          <div class="metric-label">Ускорение vs CPython 3.13</div>
-        </div>
-        <div class="metric-card glass">
-          <div class="metric-val">56.3x</div>
-          <div class="metric-label">Быстрее torch.compile</div>
-        </div>
-        <div class="metric-card glass">
-          <div class="metric-val">0 ns</div>
-          <div class="metric-label">Накладные расходы GIL / Locks</div>
-        </div>
+      <!-- Instant Install Terminal (Bun Style One-Click Copy) -->
+      <div class="install-bar" id="installCommand">
+        <span class="install-prompt">$</span>
+        <code class="install-code">pip install git+https://github.com/Homiakus/TopoPyc.git</code>
+        <button class="copy-btn" title="Copy to clipboard" aria-label="Copy command">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+          </svg>
+        </button>
       </div>
 
-      <div class="hero-buttons">
-        <a href="#code" class="btn btn-primary">Попробовать @topojit</a>
-        <a href="#pipeline" class="btn btn-secondary">Изучить топологию $H^k$</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive Topology Visualizer Playground -->
-  <section id="interactive" class="section interactive-section">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Интерактивный тренажер</span>
-        <h2>Визуализация симплициального комплекса</h2>
-        <p>Наблюдайте, как Python код преобразуется в вершины $X^{(0)}$, ребра $X^{(1)}$ и треугольники $X^{(2)}$ с вычислением лапласиана $\Delta_k$.</p>
-      </div>
-
-      <div class="simulator-wrapper glass">
-        <div class="simulator-controls">
-          <button class="sim-btn active" data-kernel="mandelbrot">Фрактал Мандельброта</button>
-          <button class="sim-btn" data-kernel="attention">Attention Reduction</button>
-          <button class="sim-btn" data-kernel="gelu">Fused GELU Poly</button>
+      <!-- Hero Metrics Strip -->
+      <div class="metric-strip">
+        <div class="metric-item">
+          <div class="metric-figure">41.9×</div>
+          <div class="metric-caption">Faster than CPython 3.13</div>
         </div>
-
-        <div class="simulator-display">
-          <div class="sim-code-panel">
-            <div class="panel-header">Python Kernel Definition</div>
-            <pre><code id="kernelCodeView">@topojit
-def kernel(x: float, n: int) -> float:
-    acc = 0.0
-    for i in range(n):
-        acc += sin(x * float(i))
-    return acc</code></pre>
-          </div>
-
-          <div class="sim-stats-panel">
-            <div class="panel-header">Спектральный анализ Ходжа</div>
-            <div class="hodge-stat-grid">
-              <div class="stat-item">
-                <span class="stat-name">0-Симплексы (Вершины $X^{(0)}$):</span>
-                <span class="stat-value" id="statV">6</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-name">1-Симплексы (Ребра Def-Use $X^{(1)}$):</span>
-                <span class="stat-value" id="statE">8</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-name">2-Симплексы (Грани $X^{(2)}$):</span>
-                <span class="stat-value" id="statT">3</span>
-              </div>
-              <div class="stat-item highlight">
-                <span class="stat-name">$\dim H^0(\Delta_0)$ (Компоненты связности):</span>
-                <span class="stat-value" id="statH0">1</span>
-              </div>
-              <div class="stat-item highlight-success">
-                <span class="stat-name">$\dim H^1(\Delta_1)$ (Дефект типизации):</span>
-                <span class="stat-value" id="statH1">0 (Мономорфно!)</span>
-              </div>
-              <div class="stat-item highlight-cyan">
-                <span class="stat-name">$\dim H^2(\Delta_2)$ (Инвариант гонок):</span>
-                <span class="stat-value" id="statH2">0 (Lock-Free)</span>
-              </div>
-            </div>
-            <div class="hodge-formula">
-              $$\Delta_k = d_{k-1} d_{k-1}^* + d_k^* d_k \quad \Longrightarrow \quad \ker(\Delta_1) = 0$$
-            </div>
-          </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-figure">56.3×</div>
+          <div class="metric-caption">Faster than torch.compile</div>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-figure">0 ns</div>
+          <div class="metric-caption">GIL & Boxed Object Overhead</div>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-figure">H¹ = 0</div>
+          <div class="metric-caption">Monomorphic Invariant Proof</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Architectural Pipeline Section -->
-  <section id="pipeline" class="section pipeline-section">
+  <!-- Live Performance Comparison (Bun/Raycast Style Benchmarks) -->
+  <section id="benchmarks" class="section">
     <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Архитектурный конвейер</span>
-        <h2>Как устроен TopoPyc изнутри</h2>
-        <p>4 фундаментальных слоя непрерывной трансформации синтаксиса в машинный код.</p>
-      </div>
+      <div class="section-badge">Benchmarks</div>
+      <h2 class="section-title">Tested against production runtimes</h2>
+      <p class="section-subtitle">Real-world deep learning kernels measured across 10,000,000 continuous iterations on a single CPU core.</p>
 
-      <div class="pipeline-grid">
-        <div class="pipeline-step glass">
-          <div class="step-num">01</div>
-          <h3>Симплициальный комплекс</h3>
-          <p>Разбор стандартного AST Python на вершины переменных, ориентированные ребра Def-Use потоков данных и 2-симплексы операторов с матрицами инцидентности.</p>
-          <div class="step-badge">topopyc/simplicial.py</div>
-        </div>
-
-        <div class="pipeline-step glass">
-          <div class="step-num">02</div>
-          <h3>Клеточный пучок типов</h3>
-          <p>Стебли векторных пространств $\mathcal{F}(\sigma)$ привязываются к каждой клетке. Операторы рестрикции $\rho$ гарантируют согласованность типов при переходе операндов.</p>
-          <div class="step-badge">topopyc/sheaf.py</div>
-        </div>
-
-        <div class="pipeline-step glass">
-          <div class="step-num">03</div>
-          <h3>Оператор Ходжа-Лапласа</h3>
-          <p>Дискретное внешнее исчисление. Вычисление операторов $\Delta_0, \Delta_1, \Delta_2$ доказывает мономорфизм типов и отсутствие дедлоков без мьютексов.</p>
-          <div class="step-badge">topopyc/hodge.py</div>
-        </div>
-
-        <div class="pipeline-step glass">
-          <div class="step-num">04</div>
-          <h3>Unboxed C99 & AVX Codegen</h3>
-          <p>Генерация компактного машинного Си-кода без заголовков PyObject и вызовов сборщика мусора. Прямой доступ к регистрам FPU/SIMD.</p>
-          <div class="step-badge">topopyc/codegen.py</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Live Benchmarks Section -->
-  <section id="benchmark" class="section benchmark-section">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Эмпирические измерения</span>
-        <h2>Бенчмарки: Deep Learning & High-Compute Ядра</h2>
-        <p>Замеры времени выполнения 10 000 000 итераций на одном ядре CPU (меньше — лучше).</p>
-      </div>
-
-      <div class="chart-container glass">
-        <!-- Kernel 1 Chart -->
-        <div class="chart-block">
-          <div class="chart-header">
-            <h4>Fused GELU Polynomial Kernel (10M итераций)</h4>
-            <span class="badge badge-fast">TopoPyc: 25.04 ms</span>
+      <div class="bento-benchmark">
+        <!-- Kernel 1 Card -->
+        <div class="benchmark-card">
+          <div class="bench-head">
+            <div class="bench-meta">
+              <span class="bench-name">Fused GELU Polynomial Kernel</span>
+              <span class="bench-iters">10,000,000 iterations • Scalar Fused</span>
+            </div>
+            <div class="bench-winner-tag">41.9× Speedup</div>
           </div>
-          <div class="bars">
-            <div class="bar-group">
-              <span class="bar-label">PyTorch Eager</span>
-              <div class="bar-rail">
-                <div class="bar-fill eager" style="width: 100%;">19 894 ms</div>
+
+          <div class="bar-chart">
+            <div class="bar-row">
+              <div class="bar-info">
+                <span class="runtime-name">PyTorch 2.10 Eager</span>
+                <span class="runtime-time">19,894 ms</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill bg-muted" style="width: 100%;"></div>
               </div>
             </div>
-            <div class="bar-group">
-              <span class="bar-label">torch.compile</span>
-              <div class="bar-rail">
-                <div class="bar-fill torch" style="width: 25%;">1 409 ms</div>
+
+            <div class="bar-row">
+              <div class="bar-info">
+                <span class="runtime-name">PyTorch torch.compile (Inductor)</span>
+                <span class="runtime-time">1,409 ms</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill bg-neutral" style="width: 18%;"></div>
               </div>
             </div>
-            <div class="bar-group">
-              <span class="bar-label">Pure CPython 3.13</span>
-              <div class="bar-rail">
-                <div class="bar-fill cpython" style="width: 20%;">1 048 ms</div>
+
+            <div class="bar-row">
+              <div class="bar-info">
+                <span class="runtime-name">CPython 3.13 (Native Bytecode)</span>
+                <span class="runtime-time">1,048 ms</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill bg-neutral" style="width: 14%;"></div>
               </div>
             </div>
-            <div class="bar-group">
-              <span class="bar-label">⚡ TopoPyc JIT</span>
-              <div class="bar-rail">
-                <div class="bar-fill topopyc" style="width: 4%;">25 ms (56x быстрее)</div>
+
+            <div class="bar-row active">
+              <div class="bar-info">
+                <span class="runtime-name highlight">⚡ TopoPyc (Hodge Sheaf JIT)</span>
+                <span class="runtime-time highlight">25.04 ms</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill bg-brand" style="width: 2.5%;"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Kernel 2 Chart -->
-        <div class="chart-block">
-          <div class="chart-header">
-            <h4>Attention Reduction (20M Tokens)</h4>
-            <span class="badge badge-fast">TopoPyc: 100.86 ms</span>
+        <!-- Kernel 2 Card -->
+        <div class="benchmark-card">
+          <div class="bench-head">
+            <div class="bench-meta">
+              <span class="bench-name">Attention Dot-Product Score Reduction</span>
+              <span class="bench-iters">20,000,000 elements • Vector Loop</span>
+            </div>
+            <div class="bench-winner-tag">21.0× Speedup</div>
           </div>
-          <div class="bars">
-            <div class="bar-group">
-              <span class="bar-label">Pure CPython 3.13</span>
-              <div class="bar-rail">
-                <div class="bar-fill cpython" style="width: 85%;">2 116 ms</div>
+
+          <div class="bar-chart">
+            <div class="bar-row">
+              <div class="bar-info">
+                <span class="runtime-name">CPython 3.13</span>
+                <span class="runtime-time">2,116 ms</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill bg-neutral" style="width: 90%;"></div>
               </div>
             </div>
-            <div class="bar-group">
-              <span class="bar-label">⚡ TopoPyc JIT</span>
-              <div class="bar-rail">
-                <div class="bar-fill topopyc" style="width: 10%;">100 ms (21x быстрее)</div>
+
+            <div class="bar-row active">
+              <div class="bar-info">
+                <span class="runtime-name highlight">⚡ TopoPyc (Hodge Sheaf JIT)</span>
+                <span class="runtime-time highlight">100.86 ms</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill bg-brand" style="width: 6.5%;"></div>
               </div>
             </div>
           </div>
@@ -245,62 +199,228 @@ def kernel(x: float, n: int) -> float:
     </div>
   </section>
 
-  <!-- Usage & Quickstart Code Section -->
-  <section id="code" class="section code-section">
+  <!-- Interactive Topology Simulator (Linear/Raycast Bento Style) -->
+  <section id="interactive" class="section border-top">
     <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Быстрый старт</span>
-        <h2>Интеграция в одну строчку</h2>
-        <p>Никаких изменений синтаксиса Python. Просто добавьте декоратор.</p>
-      </div>
+      <div class="section-badge">Live Interactive Preview</div>
+      <h2 class="section-title">See the topological reduction live</h2>
+      <p class="section-subtitle">Select a compute kernel to inspect how AST nodes translate into simplices, coboundary chains, and Hodge invariants.</p>
 
-      <div class="code-cards-grid">
-        <div class="code-card glass">
-          <div class="card-title">1. JIT компиляция функции в Python</div>
-          <pre><code>from topopyc import topojit
-import math
+      <div class="interactive-bento">
+        <!-- Kernel Selector Tabs -->
+        <div class="tab-list">
+          <button class="tab-btn active" data-kernel="mandelbrot">
+            <span class="tab-title">Mandelbrot Fractal</span>
+            <span class="tab-desc">Dynamic branch & escape orbit</span>
+          </button>
+          <button class="tab-btn" data-kernel="attention">
+            <span class="tab-title">Attention Reduction</span>
+            <span class="tab-desc">Scaled dot-product sequence</span>
+          </button>
+          <button class="tab-btn" data-kernel="gelu">
+            <span class="tab-title">Fused GELU Poly</span>
+            <span class="tab-desc">Hyperbolic polynomial activation</span>
+          </button>
+        </div>
 
-@topojit(opt_level="-O3")
-def fast_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
+        <!-- Code & Topology Display Grid -->
+        <div class="bento-split">
+          <!-- Left: Code Editor Mockup -->
+          <div class="code-window">
+            <div class="window-bar">
+              <div class="window-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+              </div>
+              <span class="window-filename">kernel.py</span>
+              <span class="window-tag">JIT Decorated</span>
+            </div>
+            <pre class="code-content"><code id="codeViewer">@topojit(opt_level="-O3")
+def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
     z_re = 0.0
     z_im = 0.0
     for i in range(max_iter):
         z_re2 = z_re * z_re
         z_im2 = z_im * z_im
-        if z_re2 + z_im2 > 4.0:
+        if (z_re2 + z_im2) > 4.0:
             return i
         z_im = 2.0 * z_re * z_im + c_im
         z_re = z_re2 - z_im2 + c_re
     return max_iter</code></pre>
+          </div>
+
+          <!-- Right: Mathematical Diagnostics Panel -->
+          <div class="diagnostics-panel">
+            <div class="diag-header">
+              <span class="diag-title">Hodge Sheaf Invariants</span>
+              <span class="diag-status">Verified</span>
+            </div>
+
+            <div class="diag-metrics">
+              <div class="diag-row">
+                <span class="diag-label">0-Simplices (Vertices $X^{(0)}$)</span>
+                <span class="diag-val" id="metricV">11 cells</span>
+              </div>
+              <div class="diag-row">
+                <span class="diag-label">1-Simplices (Def-Use Edges $X^{(1)}$)</span>
+                <span class="diag-val" id="metricE">14 cells</span>
+              </div>
+              <div class="diag-row">
+                <span class="diag-label">2-Simplices (Operator Faces $X^{(2)}$)</span>
+                <span class="diag-val" id="metricT">6 cells</span>
+              </div>
+              <div class="diag-row highlight-row">
+                <span class="diag-label">$\dim H^0(\Delta_0)$ Connected Fiber</span>
+                <span class="diag-val badge-ok" id="metricH0">1</span>
+              </div>
+              <div class="diag-row highlight-row">
+                <span class="diag-label">$\dim H^1(\Delta_1)$ Type Defect Cohomology</span>
+                <span class="diag-val badge-zero" id="metricH1">0 (Monomorphic)</span>
+              </div>
+              <div class="diag-row highlight-row">
+                <span class="diag-label">$\dim H^2(\Delta_2)$ Concurrency Race Kernel</span>
+                <span class="diag-val badge-zero" id="metricH2">0 (Lock-Free)</span>
+              </div>
+            </div>
+
+            <div class="diag-footer">
+              <span class="diag-formula">$$\Delta_k = d_{k-1} d_{k-1}^* + d_k^* d_k \quad \Longrightarrow \quad \ker(\Delta_1) = 0$$</span>
+              <span class="diag-sub">100% register unboxing proven without speculative deoptimization guards.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture 4-Pillar Bento Grid (Linear Style) -->
+  <section id="architecture" class="section border-top">
+    <div class="container">
+      <div class="section-badge">Architecture</div>
+      <h2 class="section-title">Built on geometric invariant theory</h2>
+      <p class="section-subtitle">Why traditional tracing and tier-2 JITs plateau, and how simplicial sheaves bypass them.</p>
+
+      <div class="bento-grid">
+        <div class="bento-card bento-span-2">
+          <div class="bento-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+          </div>
+          <h3 class="bento-heading">Cellular Sheaf Type Inference</h3>
+          <p class="bento-text">
+            Standard CFGs are 1D flat graphs. TopoPyc maps dataflow into higher-dimensional cell complexes with vector space stalks $\mathcal{F}(\sigma)$ and restriction morphisms $\rho$. Types propagate along algebraic boundaries, eliminating polymorphic guards.
+          </p>
+          <div class="bento-tag">topopyc/sheaf.py</div>
         </div>
 
-        <div class="code-card glass">
-          <div class="card-title">2. AOT компиляция через CLI в нативный бинарник</div>
-          <pre><code># Установка пакета
-pip install -e .
+        <div class="bento-card">
+          <div class="bento-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+          </div>
+          <h3 class="bento-heading">Zero-Cost Monomorphism</h3>
+          <p class="bento-text">
+            When $\dim H^1 = 0$, every variable is proven to hold a strictly static type across all execution paths. Values never touch heap `PyObject*` descriptors.
+          </p>
+          <div class="bento-tag">topopyc/optimizer.py</div>
+        </div>
 
-# Спектральный анализ Ходжа
+        <div class="bento-card">
+          <div class="bento-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path></svg>
+          </div>
+          <h3 class="bento-heading">Persistent SHA-256 Caching</h3>
+          <p class="bento-text">
+            Compiled `.so` extensions are cached in `~/.cache/topopyc` by deterministic hash of AST semantics and compiler flags. Subsequent test invocations run in 0.26 seconds.
+          </p>
+          <div class="bento-tag">~/.cache/topopyc</div>
+        </div>
+
+        <div class="bento-card bento-span-2">
+          <div class="bento-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <h3 class="bento-heading">Direct AVX / NEON Code Synthesis</h3>
+          <p class="bento-text">
+            Translates monomorphic kernels into raw C99 compiled via detected native toolchains (GCC / Clang). Auto-vectorization flags (`-O3 -march=native -ffast-math`) unlock raw CPU compute saturation.
+          </p>
+          <div class="bento-tag">topopyc/codegen.py</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quickstart & API Section (Bun Style) -->
+  <section id="quickstart" class="section border-top">
+    <div class="container">
+      <div class="section-badge">Usage</div>
+      <h2 class="section-title">Drop-in decorator. CLI compiler.</h2>
+      <p class="section-subtitle">No rewrite, no Cython annotations, no external language boundaries.</p>
+
+      <div class="usage-grid">
+        <div class="usage-card">
+          <div class="usage-header">
+            <span>In-Python JIT Kernel</span>
+            <span class="tag-pill">Python API</span>
+          </div>
+          <pre class="usage-code"><code>from topopyc import topojit
+import math
+
+@topojit(opt_level="-O3")
+def heavy_kernel(x: float, steps: int) -> float:
+    acc = x
+    for i in range(steps):
+        acc += math.sin(acc * 0.01)
+    return acc
+
+# First call triggers JIT compilation (<30ms)
+# All subsequent calls run at bare-metal speed
+result = heavy_kernel(1.0, 10_000_000)</code></pre>
+        </div>
+
+        <div class="usage-card">
+          <div class="usage-header">
+            <span>Standalone AOT CLI</span>
+            <span class="tag-pill">Terminal</span>
+          </div>
+          <pre class="usage-code"><code># Perform Hodge cohomology analysis
 topopyc kernel.py --analyze
 
-# Компиляция в автономный исполняемый файл C99/AVX
+# Compile standalone executable (no Python required)
 topopyc kernel.py -o ./kernel_bin -O -Ofast
 
-# Компиляция в разделяемую библиотеку CPython .so
+# Compile as CPython shared library (.so)
 topopyc kernel.py --so -o ./kernel.so</code></pre>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer glass">
-    <div class="container footer-content">
+  <!-- Minimalist Developer Footer -->
+  <footer class="footer">
+    <div class="container footer-shell">
       <div class="footer-left">
-        <span class="logo-symbol">⟁</span>
-        <strong>TopoPyc Engine</strong> — Multidimensional Topological Holography Compiler.
+        <div class="footer-brand">
+          <span class="logo-symbol">⟁</span>
+          <span class="logo-title">topopyc</span>
+        </div>
+        <p class="footer-text">
+          Topological Sheaf Python Compiler. Created at Tao Science & TopoCompil Engine. Released under the MIT License.
+        </p>
       </div>
-      <div class="footer-right">
-        <span>Лицензия MIT • 2026 Tao Science & TopoCompil</span>
+
+      <div class="footer-links">
+        <div class="link-col">
+          <span class="link-head">Project</span>
+          <a href="https://github.com/Homiakus/TopoPyc" target="_blank">GitHub Repository</a>
+          <a href="https://github.com/Homiakus/TopoPyc/blob/main/TOPOLOGICAL_PYTHON_COMPILER_RESEARCH.md" target="_blank">Research Paper</a>
+          <a href="https://github.com/Homiakus/TopoPyc/blob/main/UX_AUDIT_REPORT.md" target="_blank">UX & DX Audit</a>
+        </div>
+        <div class="link-col">
+          <span class="link-head">Ecosystem</span>
+          <a href="#benchmarks">Benchmarks</a>
+          <a href="#interactive">Interactive Simulator</a>
+          <a href="#architecture">Architecture</a>
+        </div>
       </div>
     </div>
   </footer>

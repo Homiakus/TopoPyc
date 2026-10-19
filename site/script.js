@@ -1,93 +1,35 @@
-// TopoPyc - Interactive Holographic Simplicial Canvas & Kernel Switcher
+// TopoPyc - Snappy Interaction Script (Zero Bloat)
 
-// 1. Simplicial Dynamic Canvas Animation
-const canvas = document.getElementById('topologyCanvas');
-const ctx = canvas.getContext('2d');
+// 1. One-Click Install Command Copy (Bun Style)
+const installBar = document.getElementById('installCommand');
+const copyBtn = installBar?.querySelector('.copy-btn');
+const installCode = installBar?.querySelector('.install-code');
 
-let width, height;
-function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// Topological Simplex Vertices
-const NUM_VERTICES = 45;
-const vertices = [];
-
-for (let i = 0; i < NUM_VERTICES; i++) {
-  vertices.push({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    vx: (Math.random() - 0.5) * 0.8,
-    vy: (Math.random() - 0.5) * 0.8,
-    radius: Math.random() * 2.5 + 1.5,
-    type: Math.random() > 0.5 ? 'float64' : 'int64'
+if (copyBtn && installCode) {
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(installCode.textContent.trim());
+      copyBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      `;
+      setTimeout(() => {
+        copyBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+          </svg>
+        `;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard', err);
+    }
   });
 }
 
-function drawSimplicialComplex() {
-  ctx.clearRect(0, 0, width, height);
-
-  // Update positions
-  for (let v of vertices) {
-    v.x += v.vx;
-    v.y += v.vy;
-
-    if (v.x < 0 || v.x > width) v.vx *= -1;
-    if (v.y < 0 || v.y > height) v.vy *= -1;
-  }
-
-  // Draw 2-simplexes (triangles) and 1-simplexes (edges)
-  for (let i = 0; i < NUM_VERTICES; i++) {
-    for (let j = i + 1; j < NUM_VERTICES; j++) {
-      const d1 = Math.hypot(vertices[i].x - vertices[j].x, vertices[i].y - vertices[j].y);
-      if (d1 < 140) {
-        // Draw 1-Simplex Edge
-        ctx.strokeStyle = `rgba(0, 240, 255, ${0.35 * (1 - d1 / 140)})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(vertices[i].x, vertices[i].y);
-        ctx.lineTo(vertices[j].x, vertices[j].y);
-        ctx.stroke();
-
-        // Check for 2-simplex triangle closure
-        for (let k = j + 1; k < NUM_VERTICES; k++) {
-          const d2 = Math.hypot(vertices[j].x - vertices[k].x, vertices[j].y - vertices[k].y);
-          const d3 = Math.hypot(vertices[i].x - vertices[k].x, vertices[i].y - vertices[k].y);
-          if (d2 < 140 && d3 < 140) {
-            // Draw 2-Simplex Face
-            ctx.fillStyle = `rgba(121, 40, 202, ${0.08 * (1 - (d1 + d2 + d3) / 420)})`;
-            ctx.beginPath();
-            ctx.moveTo(vertices[i].x, vertices[i].y);
-            ctx.lineTo(vertices[j].x, vertices[j].y);
-            ctx.lineTo(vertices[k].x, vertices[k].y);
-            ctx.closePath();
-            ctx.fill();
-          }
-        }
-      }
-    }
-  }
-
-  // Draw 0-Simplex Vertices
-  for (let v of vertices) {
-    ctx.beginPath();
-    ctx.arc(v.x, v.y, v.radius, 0, Math.PI * 2);
-    ctx.fillStyle = v.type === 'float64' ? '#00f0ff' : '#a855f7';
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = v.type === 'float64' ? '#00f0ff' : '#a855f7';
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-
-  requestAnimationFrame(drawSimplicialComplex);
-}
-drawSimplicialComplex();
-
-// 2. Interactive Simulator Kernel Presets
-const KERNELS = {
+// 2. Interactive Kernel Switcher Tabs
+const KERNEL_DATA = {
   mandelbrot: {
     code: `@topojit(opt_level="-O3")
 def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
@@ -101,11 +43,11 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
         z_im = 2.0 * z_re * z_im + c_im
         z_re = z_re2 - z_im2 + c_re
     return max_iter`,
-    v: 11,
-    e: 14,
-    t: 6,
-    h0: "1 (Связен)",
-    h1: "0 (Мономорфен)",
+    v: "11 cells",
+    e: "14 cells",
+    t: "6 cells",
+    h0: "1",
+    h1: "0 (Monomorphic)",
     h2: "0 (Lock-Free)"
   },
   attention: {
@@ -120,11 +62,11 @@ def attention_reduction(dim: int, query_val: float) -> float:
         weight = math.exp(score * 0.1)
         acc_score += weight * val_val
     return acc_score`,
-    v: 14,
-    e: 18,
-    t: 8,
-    h0: "1 (Связен)",
-    h1: "0 (Мономорфен)",
+    v: "14 cells",
+    e: "18 cells",
+    t: "8 cells",
+    h0: "1",
+    h1: "0 (Monomorphic)",
     h2: "0 (Lock-Free)"
   },
   gelu: {
@@ -138,53 +80,51 @@ def gelu_poly(x_val: float, steps: int) -> float:
         tanh_val = (e2 - 1.0) / (e2 + 1.0)
         acc = 0.5 * acc * (1.0 + tanh_val)
     return acc`,
-    v: 16,
-    e: 22,
-    t: 9,
-    h0: "1 (Связен)",
-    h1: "0 (Мономорфен)",
+    v: "16 cells",
+    e: "22 cells",
+    t: "9 cells",
+    h0: "1",
+    h1: "0 (Monomorphic)",
     h2: "0 (Lock-Free)"
   }
 };
 
-const codeView = document.getElementById('kernelCodeView');
-const statV = document.getElementById('statV');
-const statE = document.getElementById('statE');
-const statT = document.getElementById('statT');
-const statH0 = document.getElementById('statH0');
-const statH1 = document.getElementById('statH1');
-const statH2 = document.getElementById('statH2');
-const simButtons = document.querySelectorAll('.sim-btn');
+const codeViewer = document.getElementById('codeViewer');
+const metricV = document.getElementById('metricV');
+const metricE = document.getElementById('metricE');
+const metricT = document.getElementById('metricT');
+const metricH0 = document.getElementById('metricH0');
+const metricH1 = document.getElementById('metricH1');
+const metricH2 = document.getElementById('metricH2');
 
-simButtons.forEach(btn => {
+const tabButtons = document.querySelectorAll('.tab-btn');
+
+tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
-    simButtons.forEach(b => b.classList.remove('active'));
+    tabButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     const kernelKey = btn.getAttribute('data-kernel');
-    const data = KERNELS[kernelKey];
-    if (data) {
-      codeView.textContent = data.code;
-      statV.textContent = data.v;
-      statE.textContent = data.e;
-      statT.textContent = data.t;
-      statH0.textContent = data.h0;
-      statH1.textContent = data.h1;
-      statH2.textContent = data.h2;
+    const data = KERNEL_DATA[kernelKey];
+    if (data && codeViewer) {
+      codeViewer.textContent = data.code;
+      if (metricV) metricV.textContent = data.v;
+      if (metricE) metricE.textContent = data.e;
+      if (metricT) metricT.textContent = data.t;
+      if (metricH0) metricH0.textContent = data.h0;
+      if (metricH1) metricH1.textContent = data.h1;
+      if (metricH2) metricH2.textContent = data.h2;
     }
   });
 });
 
-// Smooth scroll for nav links
+// 3. Smooth Anchor Scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    e.preventDefault();
+  anchor.addEventListener('click', function(e) {
     const target = document.querySelector(this.getAttribute('href'));
     if (target) {
-      target.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
 });
