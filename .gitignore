@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Compiled outputs and temporary files
+topopyc_binary
+*.c.c
+tests/test_standalone_mandel
+tests/test_standalone_mandel.c
+/tmp/topopyc_*
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
