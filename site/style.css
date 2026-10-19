@@ -1,14 +1,17 @@
 /* ==========================================================================
    TopoPyc — Linear / Raycast / Bun.sh Inspired Engineering Design System
+   Multi-Theme System (Dark, Light, OLED) & Full Mobile Responsiveness
    ========================================================================== */
 
 :root {
+  /* Dark Theme (Default) */
   --bg: #0a0a0c;
   --bg-subtle: #111114;
   --surface: #16161a;
   --surface-hover: #1c1c22;
+  --surface-code: #0d0d10;
   --border: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(255, 255, 255, 0.2);
+  --border-focus: rgba(255, 255, 255, 0.22);
 
   --text-primary: #ededed;
   --text-secondary: #8a8f98;
@@ -16,8 +19,8 @@
 
   --brand-orange: #f59e0b;
   --brand-gradient: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #dc2626 100%);
-  --brand-cyan: #06b6d4;
   --brand-green: #10b981;
+  --glow-color: rgba(245, 158, 11, 0.12);
 
   --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Geist Mono', 'Fira Code', monospace;
@@ -30,6 +33,46 @@
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Light Theme */
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg-subtle: #f1f5f9;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-code: #0f172a;
+  --border: rgba(0, 0, 0, 0.09);
+  --border-focus: rgba(0, 0, 0, 0.25);
+
+  --text-primary: #090d16;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+
+  --brand-orange: #d97706;
+  --brand-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 60%, #b91c1c 100%);
+  --brand-green: #059669;
+  --glow-color: rgba(217, 119, 6, 0.08);
+}
+
+/* OLED Pure Black Theme */
+[data-theme="oled"] {
+  --bg: #000000;
+  --bg-subtle: #050505;
+  --surface: #0a0a0a;
+  --surface-hover: #121212;
+  --surface-code: #000000;
+  --border: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(255, 255, 255, 0.35);
+
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+
+  --brand-orange: #fbbf24;
+  --brand-gradient: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+  --brand-green: #34d399;
+  --glow-color: rgba(251, 191, 36, 0.07);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -38,7 +81,6 @@
 
 html {
   scroll-behavior: smooth;
-  color-scheme: dark;
 }
 
 body {
@@ -50,11 +92,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* ==========================================================================
-   Background Subtle Radial Mesh (No AI-slop particles, pure geometric glow)
-   ========================================================================== */
 .radial-glow {
   position: absolute;
   top: 0;
@@ -62,7 +102,7 @@ body {
   transform: translateX(-50%);
   width: 900px;
   height: 480px;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, rgba(234, 88, 12, 0.04) 40%, transparent 70%);
+  background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -74,11 +114,11 @@ body {
 }
 
 /* ==========================================================================
-   Header & Floating Island Navbar (Linear Style)
+   Navigation Bar (Floating Island with Language & Theme Toggles)
    ========================================================================== */
 .header-nav {
   position: sticky;
-  top: 16px;
+  top: 14px;
   z-index: 100;
   display: flex;
   justify-content: center;
@@ -93,12 +133,14 @@ body {
   max-width: 960px;
   height: 48px;
   padding: 0 16px;
-  background: rgba(16, 16, 20, 0.75);
+  background: rgba(var(--bg), 0.75);
+  background-color: var(--surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
 }
 
 .brand-link {
@@ -138,10 +180,6 @@ body {
   gap: 20px;
 }
 
-@media (max-width: 640px) {
-  .nav-menu { display: none; }
-}
-
 .nav-item {
   color: var(--text-secondary);
   text-decoration: none;
@@ -152,6 +190,35 @@ body {
 
 .nav-item:hover {
   color: var(--text-primary);
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.control-btn:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+  border-color: var(--border-focus);
 }
 
 .btn-github {
@@ -174,13 +241,64 @@ body {
   border-color: var(--border-focus);
 }
 
+/* Mobile Drawer */
+.mobile-drawer {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 16px;
+  right: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  z-index: 99;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-drawer.open {
+  display: flex;
+}
+
+.drawer-item {
+  padding: 10px 14px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.drawer-item:hover {
+  background: var(--surface-hover);
+}
+
+.drawer-item.highlight {
+  color: var(--brand-orange);
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+/* Responsive visibility utilities */
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: inline-flex !important; }
+  .nav-menu { display: none; }
+}
+
 /* ==========================================================================
    Hero Section
    ========================================================================== */
 .hero {
   position: relative;
-  padding-top: 100px;
-  padding-bottom: 72px;
+  padding-top: 80px;
+  padding-bottom: 60px;
   text-align: center;
 }
 
@@ -199,7 +317,7 @@ body {
   border-radius: var(--radius-pill);
   font-size: 12px;
   color: var(--text-secondary);
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .pill-dot {
@@ -214,11 +332,11 @@ body {
 }
 
 .hero-title {
-  font-size: clamp(40px, 6vw, 68px);
+  font-size: clamp(34px, 5.5vw, 64px);
   font-weight: 700;
   letter-spacing: -0.035em;
-  line-height: 1.08;
-  margin-bottom: 24px;
+  line-height: 1.1;
+  margin-bottom: 20px;
 }
 
 .gradient-headline {
@@ -228,18 +346,19 @@ body {
 }
 
 .hero-desc {
-  max-width: 640px;
-  margin: 0 auto 36px;
-  font-size: 17px;
+  max-width: 620px;
+  margin: 0 auto 32px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--text-secondary);
 }
 
-/* Install Terminal Bar (Bun Style) */
+/* Install Bar */
 .install-bar {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  max-width: 100%;
   padding: 8px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -247,8 +366,13 @@ body {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-primary);
-  margin-bottom: 56px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  margin-bottom: 48px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.install-code {
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .install-prompt {
@@ -266,11 +390,12 @@ body {
   padding: 4px;
   border-radius: var(--radius-sm);
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .copy-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-hover);
 }
 
 /* Hero Metric Strip */
@@ -309,14 +434,20 @@ body {
 
 @media (max-width: 640px) {
   .metric-divider { display: none; }
-  .metric-strip { gap: 16px; justify-content: flex-start; }
+  .metric-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    text-align: center;
+  }
+  .metric-item { text-align: center; }
 }
 
 /* ==========================================================================
-   Section Headers & Common
+   Section Common
    ========================================================================== */
 .section {
-  padding: 88px 0;
+  padding: 72px 0;
 }
 
 .border-top {
@@ -335,26 +466,26 @@ body {
 }
 
 .section-title {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.025em;
   margin-bottom: 12px;
 }
 
 .section-subtitle {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-secondary);
   max-width: 580px;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 /* ==========================================================================
-   Bento Benchmark Section (Linear High-Precision Metric Design)
+   Bento Benchmark Section
    ========================================================================== */
 .bento-benchmark {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 16px;
 }
 
 @media (max-width: 860px) {
@@ -365,19 +496,19 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 20px;
 }
 
 .bench-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .bench-name {
   display: block;
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -392,23 +523,24 @@ body {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: #10b981;
+  color: var(--brand-green);
   background: rgba(16, 185, 129, 0.1);
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(16, 185, 129, 0.2);
+  white-space: nowrap;
 }
 
 .bar-chart {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .bar-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .bar-info {
@@ -437,10 +569,14 @@ body {
 }
 
 .bar-track {
-  height: 8px;
+  height: 7px;
   background: rgba(255, 255, 255, 0.04);
   border-radius: var(--radius-sm);
   overflow: hidden;
+}
+
+[data-theme="light"] .bar-track {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .bar-fill {
@@ -449,12 +585,12 @@ body {
   transition: width 0.8s var(--ease-spring);
 }
 
-.bar-fill.bg-muted { background-color: #3f3f46; }
+.bar-fill.bg-muted { background-color: #52525b; }
 .bar-fill.bg-neutral { background-color: #71717a; }
 .bar-fill.bg-brand { background: var(--brand-gradient); }
 
 /* ==========================================================================
-   Interactive Topology Simulator (Linear Tabbed Component)
+   Interactive Topology Simulator
    ========================================================================== */
 .interactive-bento {
   background: var(--surface);
@@ -471,13 +607,14 @@ body {
 
 @media (max-width: 720px) {
   .tab-list { grid-template-columns: 1fr; }
+  .tab-btn { border-right: none !important; border-bottom: 1px solid var(--border); }
 }
 
 .tab-btn {
   background: transparent;
   border: none;
   border-right: 1px solid var(--border);
-  padding: 16px 20px;
+  padding: 14px 18px;
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease;
@@ -488,11 +625,11 @@ body {
 }
 
 .tab-btn:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-hover);
 }
 
 .tab-btn.active {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-hover);
   border-bottom: 2px solid var(--brand-orange);
 }
 
@@ -514,20 +651,21 @@ body {
   grid-template-columns: 1.15fr 0.85fr;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
   .bento-split { grid-template-columns: 1fr; }
+  .code-window { border-right: none !important; border-bottom: 1px solid var(--border); }
 }
 
 .code-window {
   border-right: 1px solid var(--border);
-  background: #0d0d10;
+  background: var(--surface-code);
 }
 
 .window-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 40px;
+  height: 38px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
 }
@@ -562,16 +700,16 @@ body {
 }
 
 .code-content {
-  padding: 20px;
+  padding: 16px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.55;
   color: #e2e8f0;
   overflow-x: auto;
 }
 
 .diagnostics-panel {
-  padding: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -582,7 +720,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .diag-title {
@@ -600,14 +738,14 @@ body {
 .diag-metrics {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .diag-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12.5px;
+  font-size: 12px;
   padding: 4px 0;
 }
 
@@ -631,8 +769,8 @@ body {
 }
 
 .diag-footer {
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: 20px;
+  padding-top: 14px;
   border-top: 1px solid var(--border);
 }
 
@@ -642,6 +780,7 @@ body {
   font-size: 11px;
   color: var(--brand-orange);
   margin-bottom: 6px;
+  overflow-x: auto;
 }
 
 .diag-sub {
@@ -650,7 +789,7 @@ body {
 }
 
 /* ==========================================================================
-   Bento Grid Feature Architecture (Linear Style)
+   Bento Grid Feature Architecture
    ========================================================================== */
 .bento-grid {
   display: grid;
@@ -671,7 +810,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -683,8 +822,8 @@ body {
 }
 
 .bento-icon {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
@@ -692,21 +831,21 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--text-primary);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .bento-heading {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.015em;
   margin-bottom: 8px;
 }
 
 .bento-text {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-secondary);
   line-height: 1.55;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .bento-tag {
@@ -716,7 +855,7 @@ body {
 }
 
 /* ==========================================================================
-   Usage & API Cards (Bun Terminal Style)
+   Usage & API Cards
    ========================================================================== */
 .usage-grid {
   display: grid;
@@ -729,7 +868,7 @@ body {
 }
 
 .usage-card {
-  background: #0d0d10;
+  background: var(--surface-code);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -739,7 +878,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   font-size: 13px;
   font-weight: 500;
@@ -755,20 +894,20 @@ body {
 }
 
 .usage-code {
-  padding: 18px;
+  padding: 16px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.55;
   color: #e2e8f0;
   overflow-x: auto;
 }
 
 /* ==========================================================================
-   Minimalist Developer Footer
+   Footer
    ========================================================================== */
 .footer {
   border-top: 1px solid var(--border);
-  padding: 56px 0 40px;
+  padding: 48px 0 36px;
 }
 
 .footer-shell {
@@ -776,7 +915,7 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 32px;
+  gap: 28px;
 }
 
 .footer-brand {
@@ -793,25 +932,25 @@ body {
 }
 
 .footer-text {
-  max-width: 340px;
-  font-size: 13px;
+  max-width: 320px;
+  font-size: 12.5px;
   color: var(--text-tertiary);
   line-height: 1.5;
 }
 
 .footer-links {
   display: flex;
-  gap: 48px;
+  gap: 40px;
 }
 
 .link-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .link-head {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--text-secondary);
@@ -820,7 +959,7 @@ body {
 }
 
 .link-col a {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-tertiary);
   text-decoration: none;
   transition: color 0.15s ease;

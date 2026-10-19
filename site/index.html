@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,23 +27,55 @@
         <span class="brand-status">v0.1.0</span>
       </a>
 
-      <nav class="nav-menu">
-        <a href="#benchmarks" class="nav-item">Benchmarks</a>
-        <a href="#architecture" class="nav-item">Architecture</a>
-        <a href="#interactive" class="nav-item">Interactive</a>
-        <a href="#quickstart" class="nav-item">Docs</a>
+      <nav class="nav-menu" id="navMenu">
+        <a href="#benchmarks" class="nav-item" data-i18n="nav_benchmarks">Benchmarks</a>
+        <a href="#architecture" class="nav-item" data-i18n="nav_architecture">Architecture</a>
+        <a href="#interactive" class="nav-item" data-i18n="nav_interactive">Interactive</a>
+        <a href="#quickstart" class="nav-item" data-i18n="nav_docs">Docs</a>
       </nav>
 
-      <div class="nav-cta">
-        <a href="https://github.com/Homiakus/TopoPyc" target="_blank" rel="noopener" class="btn-github">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <!-- Language & Theme Toggles + Mobile Menu Toggle -->
+      <div class="nav-controls">
+        <!-- Language Switcher -->
+        <button id="langToggle" class="control-btn" title="Toggle Language / Переключить язык" aria-label="Toggle Language">
+          <span id="langLabel" class="control-label">EN</span>
+        </button>
+
+        <!-- Theme Switcher (Dark / Light / OLED) -->
+        <button id="themeToggle" class="control-btn" title="Toggle Theme (Dark / Light / OLED)" aria-label="Toggle Theme">
+          <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- GitHub Star Link -->
+        <a href="https://github.com/Homiakus/TopoPyc" target="_blank" rel="noopener" class="btn-github desktop-only">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
           </svg>
-          <span>Star on GitHub</span>
+          <span class="desktop-only" data-i18n="star_github">GitHub</span>
         </a>
+
+        <!-- Mobile Hamburger Toggle -->
+        <button id="mobileMenuBtn" class="control-btn mobile-only" aria-label="Toggle mobile menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobileDrawer" class="mobile-drawer">
+    <a href="#benchmarks" class="drawer-item" data-i18n="nav_benchmarks">Benchmarks</a>
+    <a href="#architecture" class="drawer-item" data-i18n="nav_architecture">Architecture</a>
+    <a href="#interactive" class="drawer-item" data-i18n="nav_interactive">Interactive</a>
+    <a href="#quickstart" class="drawer-item" data-i18n="nav_docs">Docs</a>
+    <a href="https://github.com/Homiakus/TopoPyc" target="_blank" class="drawer-item highlight" data-i18n="github_repo">GitHub Repository ↗</a>
+  </div>
 
   <!-- Hero Section (Clean, Typographic, Bun/Raycast Style) -->
   <section class="hero">
@@ -51,18 +83,18 @@
     <div class="container hero-inner">
       <div class="pill-announcement">
         <span class="pill-dot"></span>
-        <span class="pill-text">Discrete Exterior Calculus on Cellular Sheaves</span>
+        <span class="pill-text" data-i18n="hero_pill">Discrete Exterior Calculus on Cellular Sheaves</span>
         <span class="pill-arrow">→</span>
       </div>
 
       <h1 class="hero-title">
-        Python syntax.<br>
-        <span class="gradient-headline">C bare-metal speed.</span>
+        <span data-i18n="hero_title_1">Python syntax.</span><br>
+        <span class="gradient-headline" data-i18n="hero_title_2">C bare-metal speed.</span>
       </h1>
 
-      <p class="hero-desc">
-        TopoPyc transforms Python code into an $n$-dimensional simplicial complex with typed sheaves. 
-        Monomorphism is mathematically proven by vanishing 1st cohomology $\ker(\Delta_1) = 0$, compiling functions into unboxed register C99 with native AVX-512 vectorization.
+      <p class="hero-desc" data-i18n="hero_desc">
+        TopoPyc transforms Python code into an n-dimensional simplicial complex with typed sheaves. 
+        Monomorphism is mathematically proven by vanishing 1st cohomology ker(Δ₁) = 0, compiling functions into unboxed register C99 with native AVX-512 vectorization.
       </p>
 
       <!-- Instant Install Terminal (Bun Style One-Click Copy) -->
@@ -81,22 +113,22 @@
       <div class="metric-strip">
         <div class="metric-item">
           <div class="metric-figure">41.9×</div>
-          <div class="metric-caption">Faster than CPython 3.13</div>
+          <div class="metric-caption" data-i18n="metric_cpython">Faster than CPython 3.13</div>
         </div>
         <div class="metric-divider"></div>
         <div class="metric-item">
           <div class="metric-figure">56.3×</div>
-          <div class="metric-caption">Faster than torch.compile</div>
+          <div class="metric-caption" data-i18n="metric_torch">Faster than torch.compile</div>
         </div>
         <div class="metric-divider"></div>
         <div class="metric-item">
           <div class="metric-figure">0 ns</div>
-          <div class="metric-caption">GIL & Boxed Object Overhead</div>
+          <div class="metric-caption" data-i18n="metric_gil">GIL & Boxed Object Overhead</div>
         </div>
         <div class="metric-divider"></div>
         <div class="metric-item">
           <div class="metric-figure">H¹ = 0</div>
-          <div class="metric-caption">Monomorphic Invariant Proof</div>
+          <div class="metric-caption" data-i18n="metric_proof">Monomorphic Invariant Proof</div>
         </div>
       </div>
     </div>
@@ -105,17 +137,17 @@
   <!-- Live Performance Comparison (Bun/Raycast Style Benchmarks) -->
   <section id="benchmarks" class="section">
     <div class="container">
-      <div class="section-badge">Benchmarks</div>
-      <h2 class="section-title">Tested against production runtimes</h2>
-      <p class="section-subtitle">Real-world deep learning kernels measured across 10,000,000 continuous iterations on a single CPU core.</p>
+      <div class="section-badge" data-i18n="bench_badge">Benchmarks</div>
+      <h2 class="section-title" data-i18n="bench_title">Tested against production runtimes</h2>
+      <p class="section-subtitle" data-i18n="bench_sub">Real-world deep learning kernels measured across 10,000,000 continuous iterations on a single CPU core.</p>
 
       <div class="bento-benchmark">
         <!-- Kernel 1 Card -->
         <div class="benchmark-card">
           <div class="bench-head">
             <div class="bench-meta">
-              <span class="bench-name">Fused GELU Polynomial Kernel</span>
-              <span class="bench-iters">10,000,000 iterations • Scalar Fused</span>
+              <span class="bench-name" data-i18n="gelu_name">Fused GELU Polynomial Kernel</span>
+              <span class="bench-iters" data-i18n="gelu_iters">10,000,000 iterations • Scalar Fused</span>
             </div>
             <div class="bench-winner-tag">41.9× Speedup</div>
           </div>
@@ -167,8 +199,8 @@
         <div class="benchmark-card">
           <div class="bench-head">
             <div class="bench-meta">
-              <span class="bench-name">Attention Dot-Product Score Reduction</span>
-              <span class="bench-iters">20,000,000 elements • Vector Loop</span>
+              <span class="bench-name" data-i18n="attn_name">Attention Dot-Product Score Reduction</span>
+              <span class="bench-iters" data-i18n="attn_iters">20,000,000 elements • Vector Loop</span>
             </div>
             <div class="bench-winner-tag">21.0× Speedup</div>
           </div>
@@ -202,24 +234,24 @@
   <!-- Interactive Topology Simulator (Linear/Raycast Bento Style) -->
   <section id="interactive" class="section border-top">
     <div class="container">
-      <div class="section-badge">Live Interactive Preview</div>
-      <h2 class="section-title">See the topological reduction live</h2>
-      <p class="section-subtitle">Select a compute kernel to inspect how AST nodes translate into simplices, coboundary chains, and Hodge invariants.</p>
+      <div class="section-badge" data-i18n="sim_badge">Live Interactive Preview</div>
+      <h2 class="section-title" data-i18n="sim_title">See the topological reduction live</h2>
+      <p class="section-subtitle" data-i18n="sim_sub">Select a compute kernel to inspect how AST nodes translate into simplices, coboundary chains, and Hodge invariants.</p>
 
       <div class="interactive-bento">
         <!-- Kernel Selector Tabs -->
         <div class="tab-list">
           <button class="tab-btn active" data-kernel="mandelbrot">
-            <span class="tab-title">Mandelbrot Fractal</span>
-            <span class="tab-desc">Dynamic branch & escape orbit</span>
+            <span class="tab-title" data-i18n="tab_mandelbrot_title">Mandelbrot Fractal</span>
+            <span class="tab-desc" data-i18n="tab_mandelbrot_desc">Dynamic branch & escape orbit</span>
           </button>
           <button class="tab-btn" data-kernel="attention">
-            <span class="tab-title">Attention Reduction</span>
-            <span class="tab-desc">Scaled dot-product sequence</span>
+            <span class="tab-title" data-i18n="tab_attn_title">Attention Reduction</span>
+            <span class="tab-desc" data-i18n="tab_attn_desc">Scaled dot-product sequence</span>
           </button>
           <button class="tab-btn" data-kernel="gelu">
-            <span class="tab-title">Fused GELU Poly</span>
-            <span class="tab-desc">Hyperbolic polynomial activation</span>
+            <span class="tab-title" data-i18n="tab_gelu_title">Fused GELU Poly</span>
+            <span class="tab-desc" data-i18n="tab_gelu_desc">Hyperbolic polynomial activation</span>
           </button>
         </div>
 
@@ -253,40 +285,40 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
           <!-- Right: Mathematical Diagnostics Panel -->
           <div class="diagnostics-panel">
             <div class="diag-header">
-              <span class="diag-title">Hodge Sheaf Invariants</span>
-              <span class="diag-status">Verified</span>
+              <span class="diag-title" data-i18n="diag_title">Hodge Sheaf Invariants</span>
+              <span class="diag-status" data-i18n="diag_status">Verified</span>
             </div>
 
             <div class="diag-metrics">
               <div class="diag-row">
-                <span class="diag-label">0-Simplices (Vertices $X^{(0)}$)</span>
+                <span class="diag-label" data-i18n="v_label">0-Simplices (Vertices X⁽⁰⁾)</span>
                 <span class="diag-val" id="metricV">11 cells</span>
               </div>
               <div class="diag-row">
-                <span class="diag-label">1-Simplices (Def-Use Edges $X^{(1)}$)</span>
+                <span class="diag-label" data-i18n="e_label">1-Simplices (Def-Use Edges X⁽¹⁾)</span>
                 <span class="diag-val" id="metricE">14 cells</span>
               </div>
               <div class="diag-row">
-                <span class="diag-label">2-Simplices (Operator Faces $X^{(2)}$)</span>
+                <span class="diag-label" data-i18n="t_label">2-Simplices (Operator Faces X⁽²⁾)</span>
                 <span class="diag-val" id="metricT">6 cells</span>
               </div>
               <div class="diag-row highlight-row">
-                <span class="diag-label">$\dim H^0(\Delta_0)$ Connected Fiber</span>
+                <span class="diag-label" data-i18n="h0_label">dim H⁰(Δ₀) Connected Fiber</span>
                 <span class="diag-val badge-ok" id="metricH0">1</span>
               </div>
               <div class="diag-row highlight-row">
-                <span class="diag-label">$\dim H^1(\Delta_1)$ Type Defect Cohomology</span>
+                <span class="diag-label" data-i18n="h1_label">dim H¹(Δ₁) Type Defect Cohomology</span>
                 <span class="diag-val badge-zero" id="metricH1">0 (Monomorphic)</span>
               </div>
               <div class="diag-row highlight-row">
-                <span class="diag-label">$\dim H^2(\Delta_2)$ Concurrency Race Kernel</span>
+                <span class="diag-label" data-i18n="h2_label">dim H²(Δ₂) Concurrency Race Kernel</span>
                 <span class="diag-val badge-zero" id="metricH2">0 (Lock-Free)</span>
               </div>
             </div>
 
             <div class="diag-footer">
-              <span class="diag-formula">$$\Delta_k = d_{k-1} d_{k-1}^* + d_k^* d_k \quad \Longrightarrow \quad \ker(\Delta_1) = 0$$</span>
-              <span class="diag-sub">100% register unboxing proven without speculative deoptimization guards.</span>
+              <span class="diag-formula">Δₖ = d_{k-1} d*_{k-1} + d*_k d_k ⟹ ker(Δ₁) = 0</span>
+              <span class="diag-sub" data-i18n="diag_sub">100% register unboxing proven without speculative deoptimization guards.</span>
             </div>
           </div>
         </div>
@@ -297,18 +329,18 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
   <!-- Architecture 4-Pillar Bento Grid (Linear Style) -->
   <section id="architecture" class="section border-top">
     <div class="container">
-      <div class="section-badge">Architecture</div>
-      <h2 class="section-title">Built on geometric invariant theory</h2>
-      <p class="section-subtitle">Why traditional tracing and tier-2 JITs plateau, and how simplicial sheaves bypass them.</p>
+      <div class="section-badge" data-i18n="arch_badge">Architecture</div>
+      <h2 class="section-title" data-i18n="arch_title">Built on geometric invariant theory</h2>
+      <p class="section-subtitle" data-i18n="arch_sub">Why traditional tracing and tier-2 JITs plateau, and how simplicial sheaves bypass them.</p>
 
       <div class="bento-grid">
         <div class="bento-card bento-span-2">
           <div class="bento-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
           </div>
-          <h3 class="bento-heading">Cellular Sheaf Type Inference</h3>
-          <p class="bento-text">
-            Standard CFGs are 1D flat graphs. TopoPyc maps dataflow into higher-dimensional cell complexes with vector space stalks $\mathcal{F}(\sigma)$ and restriction morphisms $\rho$. Types propagate along algebraic boundaries, eliminating polymorphic guards.
+          <h3 class="bento-heading" data-i18n="arch_card1_title">Cellular Sheaf Type Inference</h3>
+          <p class="bento-text" data-i18n="arch_card1_desc">
+            Standard CFGs are 1D flat graphs. TopoPyc maps dataflow into higher-dimensional cell complexes with vector space stalks and restriction morphisms. Types propagate along algebraic boundaries, eliminating polymorphic guards.
           </p>
           <div class="bento-tag">topopyc/sheaf.py</div>
         </div>
@@ -317,9 +349,9 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
           <div class="bento-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
           </div>
-          <h3 class="bento-heading">Zero-Cost Monomorphism</h3>
-          <p class="bento-text">
-            When $\dim H^1 = 0$, every variable is proven to hold a strictly static type across all execution paths. Values never touch heap `PyObject*` descriptors.
+          <h3 class="bento-heading" data-i18n="arch_card2_title">Zero-Cost Monomorphism</h3>
+          <p class="bento-text" data-i18n="arch_card2_desc">
+            When dim H¹ = 0, every variable is proven to hold a strictly static type across all execution paths. Values never touch heap PyObject* descriptors.
           </p>
           <div class="bento-tag">topopyc/optimizer.py</div>
         </div>
@@ -328,9 +360,9 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
           <div class="bento-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"></path></svg>
           </div>
-          <h3 class="bento-heading">Persistent SHA-256 Caching</h3>
-          <p class="bento-text">
-            Compiled `.so` extensions are cached in `~/.cache/topopyc` by deterministic hash of AST semantics and compiler flags. Subsequent test invocations run in 0.26 seconds.
+          <h3 class="bento-heading" data-i18n="arch_card3_title">Persistent SHA-256 Caching</h3>
+          <p class="bento-text" data-i18n="arch_card3_desc">
+            Compiled .so extensions are cached in ~/.cache/topopyc by deterministic hash of AST semantics and compiler flags. Subsequent test invocations run in 0.26 seconds.
           </p>
           <div class="bento-tag">~/.cache/topopyc</div>
         </div>
@@ -339,9 +371,9 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
           <div class="bento-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
           </div>
-          <h3 class="bento-heading">Direct AVX / NEON Code Synthesis</h3>
-          <p class="bento-text">
-            Translates monomorphic kernels into raw C99 compiled via detected native toolchains (GCC / Clang). Auto-vectorization flags (`-O3 -march=native -ffast-math`) unlock raw CPU compute saturation.
+          <h3 class="bento-heading" data-i18n="arch_card4_title">Direct AVX / NEON Code Synthesis</h3>
+          <p class="bento-text" data-i18n="arch_card4_desc">
+            Translates monomorphic kernels into raw C99 compiled via detected native toolchains (GCC / Clang). Auto-vectorization flags (-O3 -march=native -ffast-math) unlock raw CPU compute saturation.
           </p>
           <div class="bento-tag">topopyc/codegen.py</div>
         </div>
@@ -352,14 +384,14 @@ def kernel_mandelbrot(c_re: float, c_im: float, max_iter: int) -> int:
   <!-- Quickstart & API Section (Bun Style) -->
   <section id="quickstart" class="section border-top">
     <div class="container">
-      <div class="section-badge">Usage</div>
-      <h2 class="section-title">Drop-in decorator. CLI compiler.</h2>
-      <p class="section-subtitle">No rewrite, no Cython annotations, no external language boundaries.</p>
+      <div class="section-badge" data-i18n="usage_badge">Usage</div>
+      <h2 class="section-title" data-i18n="usage_title">Drop-in decorator. CLI compiler.</h2>
+      <p class="section-subtitle" data-i18n="usage_sub">No rewrite, no Cython annotations, no external language boundaries.</p>
 
       <div class="usage-grid">
         <div class="usage-card">
           <div class="usage-header">
-            <span>In-Python JIT Kernel</span>
+            <span data-i18n="usage_jit_title">In-Python JIT Kernel</span>
             <span class="tag-pill">Python API</span>
           </div>
           <pre class="usage-code"><code>from topopyc import topojit
@@ -379,7 +411,7 @@ result = heavy_kernel(1.0, 10_000_000)</code></pre>
 
         <div class="usage-card">
           <div class="usage-header">
-            <span>Standalone AOT CLI</span>
+            <span data-i18n="usage_cli_title">Standalone AOT CLI</span>
             <span class="tag-pill">Terminal</span>
           </div>
           <pre class="usage-code"><code># Perform Hodge cohomology analysis
@@ -403,23 +435,23 @@ topopyc kernel.py --so -o ./kernel.so</code></pre>
           <span class="logo-symbol">⟁</span>
           <span class="logo-title">topopyc</span>
         </div>
-        <p class="footer-text">
+        <p class="footer-text" data-i18n="footer_desc">
           Topological Sheaf Python Compiler. Created at Tao Science & TopoCompil Engine. Released under the MIT License.
         </p>
       </div>
 
       <div class="footer-links">
         <div class="link-col">
-          <span class="link-head">Project</span>
+          <span class="link-head" data-i18n="footer_head_proj">Project</span>
           <a href="https://github.com/Homiakus/TopoPyc" target="_blank">GitHub Repository</a>
-          <a href="https://github.com/Homiakus/TopoPyc/blob/main/TOPOLOGICAL_PYTHON_COMPILER_RESEARCH.md" target="_blank">Research Paper</a>
-          <a href="https://github.com/Homiakus/TopoPyc/blob/main/UX_AUDIT_REPORT.md" target="_blank">UX & DX Audit</a>
+          <a href="https://github.com/Homiakus/TopoPyc/blob/main/TOPOLOGICAL_PYTHON_COMPILER_RESEARCH.md" target="_blank" data-i18n="footer_paper">Research Paper</a>
+          <a href="https://github.com/Homiakus/TopoPyc/blob/main/UX_AUDIT_REPORT.md" target="_blank" data-i18n="footer_audit">UX & DX Audit</a>
         </div>
         <div class="link-col">
-          <span class="link-head">Ecosystem</span>
-          <a href="#benchmarks">Benchmarks</a>
-          <a href="#interactive">Interactive Simulator</a>
-          <a href="#architecture">Architecture</a>
+          <span class="link-head" data-i18n="footer_head_eco">Ecosystem</span>
+          <a href="#benchmarks" data-i18n="nav_benchmarks">Benchmarks</a>
+          <a href="#interactive" data-i18n="nav_interactive">Interactive Simulator</a>
+          <a href="#architecture" data-i18n="nav_architecture">Architecture</a>
         </div>
       </div>
     </div>
