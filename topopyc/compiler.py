@@ -198,6 +198,104 @@ int main() {{
 
         return output_path
 
+    def compile_file(self, file_path: str, output_path: Optional[str] = None, emit_c: bool = False, as_so: bool = False) -> str:
+        """
+        Compiles an entire Python file to a standalone binary or shared library (.so).
+        """
+        with open(file_path, "r") as f:
+            src = f.read()
+        tree = ast.parse(src)
+
+        fn_nodes = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
+        if not fn_nodes:
+            raise ValueError(f"No functions found in {file_path} to compile.")
+
+        main_fn = fn_nodes[-1]
+        c_declarations = []
+        c_functions = []
+
+        complex = SimplicialComplex(name=os.path.basename(file_path))
+        sheaf = TypeSheaf(complex)
+
+        for fn_node in fn_nodes:
+            param_types = {}
+            for arg in fn_node.args.args:
+                ann = arg.annotation
+                ann_str = ast.unparse(ann) if ann else "float"
+                param_types[arg.arg] = self._type_from_annotation(ann_str)
+
+            ret_ann = fn_node.returns
+            ret_str = ast.unparse(ret_ann) if ret_ann else "float"
+            ret_type = self._type_from_annotation(ret_str)
+
+            solver = HodgeLaplacianSolver(sheaf)
+            analysis = solver.analyze()
+            codegen = NativeCCodeGenerator(sheaf, analysis)
+            full_env = dict(param_types)
+            for sub in ast.walk(fn_node):
+                if isinstance(sub, ast.Assign):
+                    for tgt in sub.targets:
+                        if isinstance(tgt, ast.Name):
+                            full_env[tgt.id] = StalkType.INT64 if isinstance(sub.value, ast.Constant) and isinstance(sub.value.value, int) else StalkType.FLOAT64
+            codegen.set_type_env(full_env)
+            c_code = codegen.generate_function(fn_node, ret_type, param_types)
+            c_declarations.append(f"{ret_type.c_type()} topopyc_{fn_node.name}();")
+            c_functions.append(c_code)
+
+        base_name = os.path.splitext(os.path.basename(file_path))[0]
+        if output_path is None:
+            output_path = f"./{base_name}.so" if as_so else f"./{base_name}"
+
+        c_src_path = output_path + ".c" if not as_so else output_path.replace(".so", ".c")
+        
+        c_header = """#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <math.h>
+#include <time.h>
+"""
+        c_body = "\n\n".join(c_functions)
+
+        if not as_so:
+            c_main = f"""
+int main(int argc, char** argv) {{
+    printf("⚡ [TopoPyc] Executing compiled binary '{base_name}'...\\n");
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    // Execute primary function
+    double res = (double)topopyc_{main_fn.name}();
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double elapsed_ms = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_nsec - start.tv_nsec) / 1000000.0;
+    printf("⚡ [TopoPyc] Completed in %.3f ms | Result: %.6f\\n", elapsed_ms, res);
+    return 0;
+}}
+"""
+        else:
+            c_main = ""
+
+        full_c = c_header + "\n" + c_body + "\n" + c_main
+        with open(c_src_path, "w") as f:
+            f.write(full_c)
+
+        if emit_c:
+            return c_src_path
+
+        cmd = [
+            "gcc",
+            self.opt_level,
+            "-march=native",
+            "-ffast-math",
+        ]
+        if as_so:
+            cmd.extend(["-shared", "-fPIC", f"-I{self.include_dir}"])
+        cmd.extend([c_src_path, "-lm", "-o", output_path])
+
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if res.returncode != 0:
+            raise RuntimeError(f"TopoPyc compilation failed:\n{res.stderr}")
+
+        return output_path
+
 import functools
 
 def topojit(fn: Optional[Callable] = None, *, opt_level: str = "-O3") -> Callable:
