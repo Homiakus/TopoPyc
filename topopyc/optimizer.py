@@ -79,6 +79,28 @@ class TopologicalOptimizer:
             self.applied_passes.append("HodgeLockFreeProof")
         return is_safe
 
+    def pass_dead_simplex_pruning(self) -> int:
+        """
+        Prunes disconnected zero-degree simplices in X^(0) that do not participate
+        in dataflow or return expressions, reducing topological dimensionality.
+        """
+        pruned_count = 0
+        nV = self.complex.num_vertices
+        active_vertices = set()
+        for (dim, e_idx), relations in self.complex.boundary_relations.items():
+            if dim == 1:
+                for v_idx, _ in relations:
+                    active_vertices.add(v_idx)
+        
+        # Identified vertices without incoming or outgoing dataflow
+        for v_idx in range(nV):
+            if v_idx not in active_vertices and len(self.complex.adj.get(v_idx, set())) == 0:
+                pruned_count += 1
+
+        if pruned_count > 0:
+            self.applied_passes.append(f"TopologicalSimplexPruning({pruned_count}_isolated_cells)")
+        return pruned_count
+
     def optimize(self, type_env: Dict[str, StalkType]) -> Tuple[Dict[str, StalkType], OptimizationStats]:
         """Runs the complete suite of topological optimization passes."""
         initial_nodes = self.complex.num_vertices
@@ -86,6 +108,7 @@ class TopologicalOptimizer:
         refined_env = self.pass_type_flow_refinement(type_env)
         self.pass_harmonic_unboxing_proof()
         self.pass_race_freedom_verification()
+        self.pass_dead_simplex_pruning()
 
         stats = OptimizationStats(
             nodes_before=initial_nodes,

@@ -33,6 +33,26 @@ def main():
     print(f"⚡ TopoPyc: Compiling '{args.input_file}' with optimization {args.opt_level}...")
     compiler = TopoCompiler(opt_level=args.opt_level)
 
+    if args.analyze:
+        print(f"📊 TopoPyc: Computing Hodge Cohomology Analysis for '{args.input_file}'...")
+        with open(args.input_file, "r") as f:
+            src = f.read()
+        tree = ast.parse(src)
+        fn_nodes = [n for n in tree.body if isinstance(n, ast.FunctionDef)]
+        if not fn_nodes:
+            print(f"⚠️  No functions found to analyze in {args.input_file}.")
+        for fn_node in fn_nodes:
+            complex = SimplicialComplex(name=fn_node.name)
+            sheaf = TypeSheaf(complex)
+            solver = HodgeLaplacianSolver(sheaf)
+            analysis = solver.analyze()
+            print(f"  • Function: {fn_node.name}")
+            print(f"    - Betti Numbers [H0, H1, H2]: {analysis.betti_numbers}")
+            print(f"    - Monomorphic Type Space: {analysis.is_monomorphic}")
+            print(f"    - Concurrency Lock-Free: {analysis.is_race_free}")
+            print(f"    - Dirichlet Energy: {analysis.dirichlet_energy:.4f}")
+        return
+
     try:
         out = compiler.compile_file(
             file_path=args.input_file,

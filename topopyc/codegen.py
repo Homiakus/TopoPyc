@@ -206,7 +206,12 @@ class NativeCCodeGenerator:
         body_lines = []
         # Emit variable declarations
         for vname, vtype in local_vars.items():
-            init_val = "0" if vtype == StalkType.INT64 else "0.0"
+            if vtype == StalkType.INT64:
+                init_val = "0"
+            elif vtype == StalkType.BOOL:
+                init_val = "false"
+            else:
+                init_val = "0.0"
             body_lines.append(f"    {vtype.c_type()} {vname} = {init_val};")
 
         # Emit statements (skipping docstrings or simple pass)
@@ -236,6 +241,11 @@ class NativeCCodeGenerator:
                 c_var_decls.append(f"    long {arg.arg};")
                 parse_args.append(f"&{arg.arg}")
                 call_args.append(f"(int64_t){arg.arg}")
+            elif st == StalkType.BOOL:
+                parse_format += "p"
+                c_var_decls.append(f"    int {arg.arg};")
+                parse_args.append(f"&{arg.arg}")
+                call_args.append(f"(bool){arg.arg}")
             elif st == StalkType.FLOAT64:
                 parse_format += "d"
                 c_var_decls.append(f"    double {arg.arg};")
@@ -253,6 +263,8 @@ class NativeCCodeGenerator:
             ret_wrapper = "return PyFloat_FromDouble(res);"
         elif return_type == StalkType.INT64:
             ret_wrapper = "return PyLong_FromLongLong(res);"
+        elif return_type == StalkType.BOOL:
+            ret_wrapper = "return PyBool_FromLong(res ? 1 : 0);"
         else:
             ret_wrapper = "Py_RETURN_NONE;"
 

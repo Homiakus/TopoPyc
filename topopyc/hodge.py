@@ -31,7 +31,7 @@ class HodgeLaplacianSolver:
     def build_d0(self) -> np.ndarray:
         """
         Builds co-boundary operator d_0 : C^0(X, F) -> C^1(X, F).
-        Total space dimension sum(dim F(v)) -> sum(dim F(e)).
+        Uses cellular sheaf restriction maps rho_{v <= e} along 1-simplices.
         """
         nV = self.complex.num_vertices
         nE = self.complex.num_edges
@@ -43,7 +43,14 @@ class HodgeLaplacianSolver:
         for e_idx in range(nE):
             boundary = self.complex.boundary_relations.get((1, e_idx), [])
             for v_idx, sign in boundary:
-                d0[e_idx, v_idx] = sign
+                # If a specific restriction operator exists, scale by its spectral norm trace
+                restr = self.sheaf.restrictions.get((1, e_idx, v_idx))
+                weight = 1.0
+                if restr is not None and restr.matrix is not None and restr.matrix.size > 0:
+                    weight = float(np.linalg.norm(restr.matrix))
+                    if weight == 0.0:
+                        weight = 1.0
+                d0[e_idx, v_idx] = sign * weight
         return d0
 
     def build_d1(self) -> np.ndarray:
