@@ -124,6 +124,11 @@ class NativeCCodeGenerator:
                     var_name = target.id
                     val_expr = self.compile_expr(node.value)
                     lines.append(f"{pad}{var_name} = {val_expr};")
+        elif isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name) and node.value:
+                var_name = node.target.id
+                val_expr = self.compile_expr(node.value)
+                lines.append(f"{pad}{var_name} = {val_expr};")
         elif isinstance(node, ast.AugAssign):
             if isinstance(node.target, ast.Name):
                 var_name = node.target.id
@@ -190,6 +195,9 @@ class NativeCCodeGenerator:
                 for tgt in sub.targets:
                     if isinstance(tgt, ast.Name) and tgt.id not in param_types:
                         local_vars[tgt.id] = self.type_env.get(tgt.id, StalkType.FLOAT64)
+            elif isinstance(sub, ast.AnnAssign):
+                if isinstance(sub.target, ast.Name) and sub.target.id not in param_types:
+                    local_vars[sub.target.id] = self.type_env.get(sub.target.id, StalkType.INT64)
             elif isinstance(sub, ast.For):
                 if isinstance(sub.target, ast.Name) and sub.target.id not in param_types:
                     local_vars[sub.target.id] = StalkType.INT64

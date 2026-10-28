@@ -342,14 +342,18 @@ int main() {{
 """
         c_body = "\n\n".join(c_functions)
 
-        if not as_so:
+        if not as_so and not output_path.endswith(".o"):
+            call_args = []
+            for arg in main_fn.args.args:
+                call_args.append("0")
+            call_args_str = ", ".join(call_args)
             c_main = f"""
 int main(int argc, char** argv) {{
     printf("⚡ [TopoPyc] Executing compiled binary '{base_name}'...\\n");
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
     // Execute primary function
-    double res = (double)topopyc_{main_fn.name}();
+    double res = (double)topopyc_{main_fn.name}({call_args_str});
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed_ms = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_nsec - start.tv_nsec) / 1000000.0;
     printf("⚡ [TopoPyc] Completed in %.3f ms | Result: %.6f\\n", elapsed_ms, res);
@@ -374,7 +378,12 @@ int main(int argc, char** argv) {{
         ]
         if as_so:
             cmd.extend(["-shared", "-fPIC", f"-I{self.include_dir}"])
-        cmd.extend([c_src_path, "-lm", "-o", output_path])
+        elif output_path.endswith(".o"):
+            cmd.extend(["-c", "-fPIC"])
+        cmd.extend([c_src_path])
+        if not output_path.endswith(".o"):
+            cmd.extend(["-lm"])
+        cmd.extend(["-o", output_path])
 
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if res.returncode != 0:
