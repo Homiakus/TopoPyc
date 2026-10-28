@@ -7,6 +7,7 @@ Betti numbers, and identifies harmonic sections ker(Delta_k) ~ H^k.
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional, Any
 import numpy as np
+import scipy.sparse as sp
 from .sheaf import TypeSheaf, StalkType
 
 @dataclass
@@ -27,6 +28,35 @@ class HodgeLaplacianSolver:
     def __init__(self, sheaf: TypeSheaf):
         self.sheaf = sheaf
         self.complex = sheaf.complex
+
+    def build_d0_sparse(self) -> sp.csr_matrix:
+        """
+        Builds sparse co-boundary operator d_0 : C^0(X, F) -> C^1(X, F).
+        Scales to large program graphs without memory overhead.
+        """
+        nV = self.complex.num_vertices
+        nE = self.complex.num_edges
+        if nV == 0 or nE == 0:
+            return sp.csr_matrix((0, 0), dtype=np.float64)
+
+        rows = []
+        cols = []
+        data = []
+
+        for e_idx in range(nE):
+            boundary = self.complex.boundary_relations.get((1, e_idx), [])
+            for v_idx, sign in boundary:
+                restr = self.sheaf.restrictions.get((1, e_idx, v_idx))
+                weight = 1.0
+                if restr is not None and restr.matrix is not None and restr.matrix.size > 0:
+                    weight = float(np.linalg.norm(restr.matrix))
+                    if weight == 0.0:
+                        weight = 1.0
+                rows.append(e_idx)
+                cols.append(v_idx)
+                data.append(sign * weight)
+
+        return sp.csr_matrix((data, (rows, cols)), shape=(nE, nV), dtype=np.float64)
 
     def build_d0(self) -> np.ndarray:
         """
@@ -52,6 +82,29 @@ class HodgeLaplacianSolver:
                         weight = 1.0
                 d0[e_idx, v_idx] = sign * weight
         return d0
+
+    def build_d1_sparse(self) -> sp.csr_matrix:
+        """
+        Builds sparse co-boundary operator d_1 : C^1(X, F) -> C^2(X, F).
+        """
+        nE = self.complex.num_edges
+        nT = self.complex.num_triangles
+        if nE == 0 or nT == 0:
+            return sp.csr_matrix((0, nE), dtype=np.float64)
+
+        rows = []
+        cols = []
+        data = []
+
+        for t_idx in range(nT):
+            boundary = self.complex.boundary_relations.get((2, t_idx), [])
+            for e_idx, sign in boundary:
+                if e_idx < nE:
+                    rows.append(t_idx)
+                    cols.append(e_idx)
+                    data.append(sign)
+
+        return sp.csr_matrix((data, (rows, cols)), shape=(nT, nE), dtype=np.float64)
 
     def build_d1(self) -> np.ndarray:
         """

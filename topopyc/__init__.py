@@ -11,6 +11,10 @@ from .hodge import HodgeLaplacianSolver, CohomologyAnalysis
 from .codegen import NativeCCodeGenerator
 from .optimizer import TopologicalOptimizer, OptimizationStats
 from .compiler import TopoCompiler, topojit
+from .ricci import SimplicialRicciOptimizer, RicciPassDiagnostic
+from .symplectic import SimplecticMemoryPass, SymplecticMemoryDiagnostic
+from .dspace import DSpaceConcurrencyPass, DeadlockTopologicalReport
+from .optics import TopoLens, record_lens, array_lens
 
 __all__ = [
     "SimplicialComplex",
@@ -25,4 +29,13 @@ __all__ = [
     "NativeCCodeGenerator",
     "TopoCompiler",
     "topojit",
+    "SimplicialRicciOptimizer",
+    "RicciPassDiagnostic",
+    "SimplecticMemoryPass",
+    "SymplecticMemoryDiagnostic",
+    "DSpaceConcurrencyPass",
+    "DeadlockTopologicalReport",
+    "TopoLens",
+    "record_lens",
+    "array_lens",
 ]

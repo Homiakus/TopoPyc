@@ -10,6 +10,9 @@ dependencies = [
     "torch>=2.14.1",
 ]
 
+[tool.setuptools.packages.find]
+include = ["topopyc*"]
+
 [project.scripts]
 topopyc = "topopyc.cli:main"
 
